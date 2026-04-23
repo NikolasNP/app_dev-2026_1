@@ -1,50 +1,152 @@
 # Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is an Expo project created with create-expo-app.
 
-## Get started
+---
+
+# 📥 Passo a passo para baixar o projeto do GitHub para o repositório local
+
+1. Instale as ferramentas necessárias no seu computador:
+   - Git → https://git-scm.com/
+   - Node.js → https://nodejs.org/
+
+2. Abra o terminal (CMD, PowerShell ou terminal do VS Code).
+
+3. Vá até a pasta onde deseja salvar o projeto. Exemplo:
+
+   cd D:\Projetos
+
+4. Clone o repositório do GitHub:
+
+   git clone https://github.com/NikolasNP/app_dev-2026_1.git
+
+5. Entre na pasta do projeto que foi criada:
+
+   cd app_dev-2026_1
+
+6. Abra o projeto no VS Code (opcional):
+
+   code .
+
+7. Instale todas as dependências do projeto:
+
+   npm install
+
+8. Inicie o projeto:
+
+   npx expo start
+
+9. O terminal mostrará opções para abrir o aplicativo em:
+   - Android Emulator
+   - iOS Simulator
+   - Expo Go
+   - Web
+
+---
+
+# 🚀 Passo a passo para subir alterações para a branch main
+
+1. Abra o terminal dentro da pasta do projeto.
+
+2. Verifique o status dos arquivos modificados:
+
+   git status
+
+3. Adicione todos os arquivos modificados ou criados:
+
+   git add .
+
+4. Crie um commit descrevendo as alterações:
+
+   git commit -m "Descrição das alterações realizadas"
+
+5. Envie as alterações para o repositório remoto:
+
+   git push origin main
+
+Se a branch já estiver conectada ao repositório remoto, também é possível usar apenas:
+
+   git push
+
+---
+
+# 🌿 Passo a passo para criar e trabalhar com branches
+
+Criar uma nova branch:
+
+   git checkout -b nome-da-branch
+
+Exemplo:
+
+   git checkout -b feature-login
+
+Ver todas as branches existentes:
+
+   git branch
+
+Trocar para outra branch:
+
+   git checkout nome-da-branch
+
+Exemplo:
+
+   git checkout main
+
+Enviar uma nova branch para o GitHub:
+
+   git push -u origin nome-da-branch
+
+Exemplo:
+
+   git push -u origin feature-login
+
+Depois disso, basta usar:
+
+   git push
+
+para continuar enviando alterações dessa branch.
+
+---
+
+# 📱 Get started
 
 1. Install dependencies
 
-   ```bash
    npm install
-   ```
 
 2. Start the app
 
-   ```bash
    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+You can start developing by editing the files inside the **app** directory.  
+This project uses file-based routing.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+# 🔄 Resetar o projeto
 
-## Get a fresh project
+Se quiser reiniciar o projeto base do Expo:
 
-When you're ready, run:
+   npm run reset-project
 
-```bash
-npm run reset-project
-```
+Esse comando move o código inicial para a pasta **app-example** e cria uma nova pasta **app** vazia.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+# 📚 Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+Expo Documentation  
+https://docs.expo.dev
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Expo Tutorial  
+https://docs.expo.dev/tutorial/introduction/
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+# 👥 Community
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Expo GitHub  
+https://github.com/expo/expo
+
+Expo Discord  
+https://chat.expo.dev
