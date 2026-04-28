@@ -1,5 +1,5 @@
-import TelaCadastro from '../components/screen/tela_cadastro';
+import TelaFazerCadastro from '../components/screen/tela_fazer_cadastro';
 
 export default function Cadastro() {
-  return <TelaCadastro />;
+  return <TelaFazerCadastro />;
 }
