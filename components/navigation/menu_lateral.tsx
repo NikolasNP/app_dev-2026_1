@@ -1,11 +1,12 @@
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const Drawer = createDrawerNavigator();
@@ -19,9 +20,16 @@ function ItemMenu({ texto, onPress }: { texto: string; onPress?: () => void }) {
 }
 
 function ConteudoDrawer({ navigation }: any) {
+  const router = useRouter();
+
   const [atalhosAberto, setAtalhosAberto] = useState(true);
   const [informacoesAberto, setInformacoesAberto] = useState(true);
   const [configAberto, setConfigAberto] = useState(true);
+
+  function irParaCadastrarAnimal() {
+    navigation.closeDrawer();
+    router.push('/cadastrar_animal');
+  }
 
   return (
     <DrawerContentScrollView
@@ -29,13 +37,11 @@ function ConteudoDrawer({ navigation }: any) {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        {/* FOTO DO USUÁRIO */}
         <Image
           source={{ uri: 'https://i.pravatar.cc/150?img=32' }}
           style={styles.avatar}
         />
-        
-        {/* NOME DO USUÁRIO */}
+
         <Text style={styles.nome}>Bianca</Text>
       </View>
 
@@ -54,10 +60,10 @@ function ConteudoDrawer({ navigation }: any) {
 
       {atalhosAberto && (
         <>
-          <ItemMenu texto="Cadastrar um pet" />
-          <ItemMenu texto="Adotar um pet" />
-          <ItemMenu texto="Ajudar um pet" />
-          <ItemMenu texto="Apadrinhar um pet" />
+          <ItemMenu
+            texto="Cadastrar um pet"
+            onPress={irParaCadastrarAnimal}
+          />
         </>
       )}
 

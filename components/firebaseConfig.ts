@@ -1,39 +1,26 @@
-//import { initializeApp } from "firebase/app";
-//import { getAuth } from "firebase/auth";
-
-//const firebaseConfig = {
-//  apiKey: "AIzaSyBBLgCUsNqbhufTirVUgYIg8ywyHpDakJs",
-//  authDomain: "meau-adea2.firebaseapp.com",
-//  projectId: "meau-adea2",
-//  storageBucket: "meau-adea2.firebasestorage.app",
-//  messagingSenderId: "896996881322",
-//  appId: "1:896996881322:web:732ec24392a1bce84eb1d3",
-//  measurementId: "G-G3QTNYJG68"
-//};
-
-//const app = initializeApp(firebaseConfig);
-
-// EXPORTAÇÃO DO AUTH
-//export const auth = getAuth(app);
-
-
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyChdJIP1-G-1S5YWmVlsSvCOZaWgwMw16c",
-  authDomain: "mecanismo-autenticacao.firebaseapp.com",
-  projectId: "mecanismo-autenticacao",
-  storageBucket: "mecanismo-autenticacao.firebasestorage.app",
-  messagingSenderId: "233087703566",
-  appId: "1:233087703566:web:1ed2429538fbc408a13a5f"
+  apiKey: "AIzaSyD7upttp2a88MBhTb91hslwNVP6LSV_WqM",
+  authDomain: "meau-94635.firebaseapp.com",
+  projectId: "meau-94635",
+  storageBucket: "meau-94635.firebasestorage.app",
+  messagingSenderId: "967467954555",
+  appId: "1:967467954555:web:2d3e2827b7d638f7218dde",
+  measurementId: "G-X6F6JPW19X"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+
