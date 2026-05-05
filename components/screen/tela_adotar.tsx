@@ -2,12 +2,12 @@ import { useRouter } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { db } from '../firebaseConfig';
 
@@ -46,7 +46,7 @@ export default function TelaAdotar() {
           <Text style={styles.nome}>{animal.nomeAnimal}</Text>
 
           <Image
-            source={{ uri: animal.fotoUri }}
+            source={{ uri: animal.fotoBase64 || animal.fotoUri }}
             style={styles.foto}
           />
 

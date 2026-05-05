@@ -1,12 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function TelaDetalheAnimal() {
@@ -28,7 +28,10 @@ export default function TelaDetalheAnimal() {
       </View>
 
       <ScrollView>
-        <Image source={{ uri: dados.fotoUri }} style={styles.foto} />
+        <Image
+          source={{ uri: dados.fotoBase64 || dados.fotoUri }}
+          style={styles.foto}
+        />
 
         <View style={styles.bolinhaArea}>
           <Text style={styles.bolinhaAtiva}>●</Text>
