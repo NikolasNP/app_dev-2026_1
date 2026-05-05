@@ -33,6 +33,8 @@ export default function Layout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="cadastro" />
       <Stack.Screen name="cadastrar_animal" />
+      <Stack.Screen name="adotar" />
+      <Stack.Screen name="detalhe_animal" />
     </Stack>
   );
 }

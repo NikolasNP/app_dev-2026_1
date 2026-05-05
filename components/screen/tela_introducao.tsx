@@ -9,7 +9,7 @@ export default function TelaIntroducao() {
   }
 
   function irParaAdotar() {
-    console.log('Ir para adoção');
+    router.push('/adotar');
   }
 
   function irParaAjudar() {

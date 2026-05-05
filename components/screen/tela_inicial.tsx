@@ -34,6 +34,10 @@ export default function TelaInicial() {
               no sistema.
             </Text>
 
+            <TouchableOpacity onPress={() => router.push('/adotar')}>
+              <Text>ADOTAR</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.botao} onPress={sair}>
               <Text style={styles.botaoTexto}>SAIR</Text>
             </TouchableOpacity>
