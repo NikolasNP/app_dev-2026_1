@@ -1,3 +1,5 @@
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { addDoc, arrayUnion, collection, doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
@@ -11,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 
 import { auth, db } from '../firebaseConfig';
 
@@ -19,6 +20,7 @@ export default function TelaCadastrarAnimal() {
   const router = useRouter();
 
   const [nomeAnimal, setNomeAnimal] = useState('');
+  const [fotoBase64, setFotoBase64] = useState<string | null>(null);
   const [fotoUri, setFotoUri] = useState<string | null>(null);
 
   const [especie, setEspecie] = useState('');
@@ -51,10 +53,28 @@ export default function TelaCadastrarAnimal() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
+      base64: true,
     });
 
     if (!resultado.canceled) {
-      setFotoUri(resultado.assets[0].uri);
+      const asset = resultado.assets[0];
+
+      const manipResult = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 600 } }],
+        {
+          compress: 0.5,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+
+      // opcional (preview)
+      setFotoUri(manipResult.uri);
+
+      if (manipResult.base64) {
+        setFotoBase64(`data:image/jpeg;base64,${manipResult.base64}`);
+      }
     }
   }
 
@@ -69,10 +89,28 @@ export default function TelaCadastrarAnimal() {
     const resultado = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 0.7,
+      base64: true,
     });
 
     if (!resultado.canceled) {
-      setFotoUri(resultado.assets[0].uri);
+      const asset = resultado.assets[0];
+
+      const manipResult = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 600 } }],
+        {
+          compress: 0.5,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+
+      // opcional (preview)
+      setFotoUri(manipResult.uri);
+
+      if (manipResult.base64) {
+        setFotoBase64(`data:image/jpeg;base64,${manipResult.base64}`);
+      }
     }
   }
 
@@ -85,7 +123,7 @@ export default function TelaCadastrarAnimal() {
       return;
     }
 
-    if (!nomeAnimal || !fotoUri || !especie || !sexo || !porte || !idade || !descricao) {
+    if (!nomeAnimal || !fotoBase64 || !especie || !sexo || !porte || !idade || !descricao) {
       Alert.alert(
         'Campos obrigatórios',
         'Preencha nome, foto, espécie, sexo, porte, idade e descrição do animal.'
@@ -108,7 +146,7 @@ export default function TelaCadastrarAnimal() {
         descricao,
 
         // Foto local, sem Firebase Storage
-        fotoUri,
+        fotoBase64,
 
         usuarioId: usuario.uid,
         criadoEm: new Date(),
@@ -165,8 +203,8 @@ export default function TelaCadastrarAnimal() {
 
         <Text style={styles.label}>FOTO DO ANIMAL</Text>
 
-        {fotoUri ? (
-          <Image source={{ uri: fotoUri }} style={styles.fotoPreview} />
+        {fotoBase64 ? (
+          <Image source={{ uri: fotoBase64 }} style={styles.fotoPreview} />
         ) : (
           <TouchableOpacity style={styles.upload} onPress={escolherFotoGaleria}>
             <Text style={styles.uploadIcon}>＋</Text>
