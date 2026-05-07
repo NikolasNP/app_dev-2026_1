@@ -15,16 +15,24 @@ export default function TelaAdotar() {
   const [animais, setAnimais] = useState<any[]>([]);
   const router = useRouter();
 
-  async function buscarAnimais() {
-    const snapshot = await getDocs(collection(db, 'animais'));
+ async function buscarAnimais() {
+  const snapshot = await getDocs(collection(db, 'animais'));
 
-    const lista = snapshot.docs.map(doc => ({
+  const lista = snapshot.docs
+    .map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    }))
+    .filter((animal: any) => {
+      return (
+        animal.disponivel !== false &&
+        animal.oculto !== true &&
+        animal.removido !== true
+      );
+    });
 
-    setAnimais(lista);
-  }
+  setAnimais(lista);
+}
 
   useEffect(() => {
     buscarAnimais();

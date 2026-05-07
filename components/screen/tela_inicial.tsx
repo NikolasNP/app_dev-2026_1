@@ -17,30 +17,45 @@ export default function TelaInicial() {
       {({ abrirMenu }) => (
         <View style={styles.container}>
           <View style={styles.topo}>
-            <TouchableOpacity style={styles.botaoMenu} onPress={abrirMenu}>
-              <Text style={styles.textoMenu}>☰</Text>
+            <TouchableOpacity onPress={abrirMenu}>
+              <Text style={styles.menu}>☰</Text>
             </TouchableOpacity>
-
-            <Text style={styles.tituloTopo}>Tela Inicial</Text>
-
-            <View style={styles.espacoDireita} />
           </View>
 
           <View style={styles.conteudo}>
-            <Text style={styles.ops}>Bem-vindo!</Text>
+            <Text style={styles.ola}>Olá!</Text>
 
             <Text style={styles.texto}>
-              Você realizou login com sucesso{'\n'}
-              no sistema.
+              Bem vindo ao Meau!{'\n'}
+              Aqui você pode adotar, doar e cadastrar{'\n'}
+              cães e gatos com facilidade.{'\n'}
+              Qual o seu interesse?
             </Text>
 
-            <TouchableOpacity onPress={() => router.push('/adotar')}>
-              <Text>ADOTAR</Text>
+            <TouchableOpacity
+              style={styles.botaoAmarelo}
+              onPress={() => router.push('/adotar')}
+            >
+              <Text style={styles.textoBotao}>ADOTAR</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.botao} onPress={sair}>
-              <Text style={styles.botaoTexto}>SAIR</Text>
+            <TouchableOpacity
+              style={styles.botaoAmarelo}
+              onPress={() => router.push('/cadastrar_animal')}
+            >
+              <Text style={styles.textoBotao}>CADASTRAR ANIMAL</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.botaoSair}
+              onPress={sair}
+            >
+              <Text style={styles.textoSair}>SAIR</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.rodape}>
+            <Text style={styles.logo}>méau</Text>
           </View>
         </View>
       )}
@@ -51,76 +66,86 @@ export default function TelaInicial() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F2F2F2',
   },
 
   topo: {
-    backgroundColor: '#8EDDD6',
-    paddingTop: 52,
-    paddingBottom: 20,
+    paddingTop: 20,
     paddingHorizontal: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
 
-  botaoMenu: {
-    width: 40,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-
-  textoMenu: {
-    fontSize: 28,
-    color: '#333',
+  menu: {
+    fontSize: 24,
+    color: '#9BD7D2',
     fontWeight: 'bold',
-  },
-
-  tituloTopo: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-
-  espacoDireita: {
-    width: 40,
   },
 
   conteudo: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 30,
+    paddingTop: 10,
   },
 
-  ops: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#8EDDD6',
-    marginBottom: 40,
+  ola: {
+    fontSize: 78,
+    color: '#F2C94C',
+    fontStyle: 'italic',
+    marginTop: 20,
+    marginBottom: 30,
+    fontWeight: '500',
   },
 
   texto: {
     fontSize: 18,
-    color: '#666',
+    color: '#8A8A8A',
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 26,
+    lineHeight: 30,
+    marginBottom: 45,
+    fontWeight: '500',
   },
 
-  botao: {
-    width: '90%',
-    backgroundColor: '#8EDDD6',
-    paddingVertical: 16,
-    borderRadius: 4,
+  botaoAmarelo: {
+    width: '78%',
+    backgroundColor: '#F2C94C',
+    paddingVertical: 15,
+    borderRadius: 2,
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 14,
     elevation: 3,
   },
 
-  botaoTexto: {
-    fontSize: 18,
-    color: '#333',
+  textoBotao: {
+    fontSize: 16,
+    color: '#6B6B6B',
+    fontWeight: 'bold',
+  },
+
+  botaoSair: {
+    width: '78%',
+    backgroundColor: '#8EDDD6',
+    paddingVertical: 15,
+    borderRadius: 2,
+    alignItems: 'center',
+    marginTop: 20,
+    elevation: 3,
+  },
+
+  textoSair: {
+    fontSize: 16,
+    color: '#434343',
+    fontWeight: 'bold',
+  },
+
+  rodape: {
+    alignItems: 'center',
+    paddingBottom: 26,
+  },
+
+  logo: {
+    fontSize: 54,
+    color: '#9BD7D2',
+    fontStyle: 'italic',
     fontWeight: 'bold',
   },
 });

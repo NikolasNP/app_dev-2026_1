@@ -213,12 +213,8 @@ export default function TelaMeusPets() {
 
           {/* APP BAR */}
           <View style={styles.appBar}>
-            <TouchableOpacity onPress={abrirMenu}>
-              <Ionicons
-                name="menu"
-                size={24}
-                color="#434343"
-              />
+            <TouchableOpacity onPress={() => router.replace('/tela_inicial')}>
+              <Ionicons name="arrow-back" size={24} color="#434343" />
             </TouchableOpacity>
 
             <Text style={styles.appBarTitulo}>

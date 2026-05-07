@@ -1,19 +1,29 @@
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import Header from '../Header';
 import InputField from '../InputField';
 import PrimaryButton from '../PrimaryButton';
-import ProfileImageBox from '../ProfileImageBox';
 import SectionTitle from '../SectionTitle';
 
 import { auth, db } from '../firebaseConfig';
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-
 export default function FazerCadastro() {
-  // INFORMAÇÕES PESSOAIS
+  const router = useRouter();
+
   const [nome, setNome] = useState('');
   const [idade, setIdade] = useState('');
   const [email, setEmail] = useState('');
@@ -22,14 +32,70 @@ export default function FazerCadastro() {
   const [endereco, setEndereco] = useState('');
   const [telefone, setTelefone] = useState('');
 
-  // INFORMAÇÕES DE PERFIL
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
 
+  const [fotoBase64, setFotoBase64] = useState<string | null>(null);
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
+
+  async function processarImagem(uri: string) {
+    const resultado = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 600 } }],
+      {
+        compress: 0.5,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      }
+    );
+
+    setFotoUri(resultado.uri);
+
+    if (resultado.base64) {
+      setFotoBase64(`data:image/jpeg;base64,${resultado.base64}`);
+    }
+  }
+
+  async function escolherFotoGaleria() {
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissao.granted) {
+      Alert.alert('Permissão negada', 'Permita o acesso à galeria.');
+      return;
+    }
+
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (!resultado.canceled) {
+      await processarImagem(resultado.assets[0].uri);
+    }
+  }
+
+  async function tirarFotoCamera() {
+    const permissao = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permissao.granted) {
+      Alert.alert('Permissão negada', 'Permita o acesso à câmera.');
+      return;
+    }
+
+    const resultado = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (!resultado.canceled) {
+      await processarImagem(resultado.assets[0].uri);
+    }
+  }
+
   async function cadastrarUsuario() {
     try {
-      // VALIDAÇÕES
       if (!nome || !email || !senha || !confirmarSenha) {
         Alert.alert('Erro', 'Preencha os campos obrigatórios.');
         return;
@@ -40,7 +106,6 @@ export default function FazerCadastro() {
         return;
       }
 
-      // CRIA USUÁRIO NO AUTH
       const credencial = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -49,7 +114,6 @@ export default function FazerCadastro() {
 
       const uid = credencial.user.uid;
 
-      // SALVA DADOS NO FIRESTORE
       await setDoc(doc(db, 'usuarios', uid), {
         nome,
         idade,
@@ -59,23 +123,13 @@ export default function FazerCadastro() {
         endereco,
         telefone,
         usuario,
+        fotoBase64: fotoBase64 || '',
         criadoEm: new Date(),
-        animais: []
+        animaisIds: [],
       });
 
       Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-
-      // LIMPA CAMPOS
-      setNome('');
-      setIdade('');
-      setEmail('');
-      setEstado('');
-      setCidade('');
-      setEndereco('');
-      setTelefone('');
-      setUsuario('');
-      setSenha('');
-      setConfirmarSenha('');
+      router.replace('/tela_inicial');
 
     } catch (error: any) {
       console.log(error);
@@ -94,18 +148,14 @@ export default function FazerCadastro() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-
-      {/* HEADER */}
       <Header />
 
-      {/* TEXTO INFORMATIVO */}
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
           As informações preenchidas serão divulgadas apenas para a pessoa com a qual você realizar o processo de adoção e/ou apadrinhamento, após a formalização do processo.
         </Text>
       </View>
 
-      {/* SEÇÃO 1 */}
       <View style={[styles.section, { marginTop: 24 }]}>
         <SectionTitle title="INFORMAÇÕES PESSOAIS" color="#88c9bf" />
 
@@ -118,7 +168,6 @@ export default function FazerCadastro() {
         <InputField placeholder="Telefone" value={telefone} onChangeText={setTelefone} />
       </View>
 
-      {/* SEÇÃO 2 */}
       <View style={styles.section}>
         <SectionTitle title="INFORMAÇÕES DE PERFIL" color="#88c9bf" />
 
@@ -127,19 +176,34 @@ export default function FazerCadastro() {
         <InputField placeholder="Confirmação de senha" secure value={confirmarSenha} onChangeText={setConfirmarSenha} />
       </View>
 
-      {/* FOTO */}
       <View style={styles.section}>
-        <SectionTitle title="FOTO DE PERFIL" color="#88c9bf" />
-        <ProfileImageBox />
+        <SectionTitle title="FOTO DE PERFIL (OPCIONAL)" color="#88c9bf" />
+
+        {fotoBase64 ? (
+          <Image source={{ uri: fotoBase64 }} style={styles.fotoPreview} />
+        ) : (
+          <TouchableOpacity style={styles.upload} onPress={escolherFotoGaleria}>
+            <Text style={styles.uploadIcon}>＋</Text>
+            <Text style={styles.uploadText}>adicionar foto</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.linhaBotoes}>
+          <TouchableOpacity style={styles.botaoFoto} onPress={tirarFotoCamera}>
+            <Text style={styles.textoBotaoFoto}>CÂMERA</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.botaoFoto} onPress={escolherFotoGaleria}>
+            <Text style={styles.textoBotaoFoto}>GALERIA</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* BOTÃO */}
       <PrimaryButton
         title="FAZER CADASTRO"
         color="#88c9bf"
         onPress={cadastrarUsuario}
       />
-
     </ScrollView>
   );
 }
@@ -169,4 +233,47 @@ const styles = StyleSheet.create({
     marginTop: 32,
     paddingHorizontal: 16,
   },
-})
+  upload: {
+    height: 130,
+    backgroundColor: '#DDDDDD',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  uploadIcon: {
+    fontSize: 30,
+    color: '#999',
+  },
+  uploadText: {
+    color: '#888',
+    fontSize: 16,
+  },
+  fotoPreview: {
+    width: '100%',
+    height: 180,
+    borderRadius: 4,
+    marginTop: 12,
+    marginBottom: 12,
+    backgroundColor: '#DDD',
+  },
+  linhaBotoes: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  botaoFoto: {
+    flex: 1,
+    backgroundColor: '#DDDDDD',
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderRadius: 3,
+    elevation: 2,
+  },
+  textoBotaoFoto: {
+    color: '#444',
+    fontWeight: 'bold',
+  },
+});

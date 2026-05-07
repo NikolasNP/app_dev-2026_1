@@ -1,6 +1,8 @@
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   StyleSheet,
@@ -8,6 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+import { auth, db } from '../firebaseConfig';
 
 const Drawer = createDrawerNavigator();
 
@@ -26,9 +30,38 @@ function ConteudoDrawer({ navigation }: any) {
   const [informacoesAberto, setInformacoesAberto] = useState(true);
   const [configAberto, setConfigAberto] = useState(true);
 
-  function irParaCadastrarAnimal() {
+  const [nomeUsuario, setNomeUsuario] = useState('Usuário');
+  const [fotoUsuario, setFotoUsuario] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function carregarUsuario() {
+      const usuarioLogado = auth.currentUser;
+
+      if (!usuarioLogado) return;
+
+      const usuarioRef = doc(db, 'usuarios', usuarioLogado.uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+
+      if (usuarioSnap.exists()) {
+        const dados = usuarioSnap.data();
+
+        setNomeUsuario(dados.nome || dados.usuario || 'Usuário');
+        setFotoUsuario(dados.fotoBase64 || null);
+      }
+    }
+
+    carregarUsuario();
+  }, []);
+
+  function fecharEAbrir(rota: string) {
     navigation.closeDrawer();
-    router.push('/cadastrar_animal');
+    router.push(rota as any);
+  }
+
+  async function sair() {
+    await signOut(auth);
+    navigation.closeDrawer();
+    router.replace('/');
   }
 
   return (
@@ -37,22 +70,22 @@ function ConteudoDrawer({ navigation }: any) {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/150?img=32' }}
-          style={styles.avatar}
-        />
+        {fotoUsuario ? (
+          <Image source={{ uri: fotoUsuario }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarLetra}>
+              {nomeUsuario.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
 
-        <Text style={styles.nome}>Bianca</Text>
+        <Text style={styles.nome}>{nomeUsuario}</Text>
       </View>
 
-      <ItemMenu texto="Meu perfil" />
-      <ItemMenu
-        texto="Meus pets"
-        onPress={() => {
-          navigation.closeDrawer();
-          router.push('/meus_pets');
-        }}
-      />
+      <ItemMenu texto="Meu perfil" onPress={() => fecharEAbrir('/perfil')} />
+      <ItemMenu texto="Meus pets" onPress={() => fecharEAbrir('/meus_pets')} />
+      <ItemMenu texto="Adotar" onPress={() => fecharEAbrir('/adotar')} />
       <ItemMenu texto="Favoritos" />
       <ItemMenu texto="Chat" />
 
@@ -66,10 +99,8 @@ function ConteudoDrawer({ navigation }: any) {
 
       {atalhosAberto && (
         <>
-          <ItemMenu
-            texto="Cadastrar um pet"
-            onPress={irParaCadastrarAnimal}
-          />
+          <ItemMenu texto="Cadastrar um pet" onPress={() => fecharEAbrir('/cadastrar_animal')} />
+          <ItemMenu texto="Adotar um pet" onPress={() => fecharEAbrir('/adotar')} />
         </>
       )}
 
@@ -101,10 +132,7 @@ function ConteudoDrawer({ navigation }: any) {
 
       {configAberto && <ItemMenu texto="Privacidade" />}
 
-      <TouchableOpacity
-        style={styles.botaoSair}
-        onPress={() => navigation.closeDrawer()}
-      >
+      <TouchableOpacity style={styles.botaoSair} onPress={sair}>
         <Text style={styles.textoSair}>Sair</Text>
       </TouchableOpacity>
     </DrawerContentScrollView>
@@ -162,6 +190,22 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 45,
     marginBottom: 20,
+  },
+
+  avatarPlaceholder: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginBottom: 20,
+    backgroundColor: '#F2F2F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  avatarLetra: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#88c9bf',
   },
 
   nome: {
