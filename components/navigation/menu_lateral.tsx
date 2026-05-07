@@ -46,7 +46,13 @@ function ConteudoDrawer({ navigation }: any) {
       </View>
 
       <ItemMenu texto="Meu perfil" />
-      <ItemMenu texto="Meus pets" />
+      <ItemMenu
+        texto="Meus pets"
+        onPress={() => {
+          navigation.closeDrawer();
+          router.push('/meus_pets');
+        }}
+      />
       <ItemMenu texto="Favoritos" />
       <ItemMenu texto="Chat" />
 
