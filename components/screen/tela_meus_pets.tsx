@@ -23,6 +23,7 @@ import MenuLateral from '../navigation/menu_lateral';
 
 import { auth, db } from '../firebaseConfig';
 
+// Tipo responsável pela estrutura dos dados do animal
 type Animal = {
   id: string;
 
@@ -53,17 +54,20 @@ export default function TelaMeusPets() {
 
   const usuario = auth.currentUser;
 
+  // Carrega em tempo real os pets cadastrados pelo usuário logado
   useEffect(() => {
     if (!usuario) {
       router.replace('/login');
       return;
     }
 
+    // Busca apenas os animais pertencentes ao usuário logado
     const q = query(
       collection(db, 'animais'),
       where('usuarioId', '==', usuario.uid)
     );
 
+    // Escuta alterações em tempo real no Firestore
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const lista: Animal[] = snapshot.docs
         .map((docSnap) => ({
