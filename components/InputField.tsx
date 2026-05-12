@@ -1,6 +1,11 @@
-import { View, TextInput, StyleSheet } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
-export default function InputField({ placeholder, secure }: any) {
+export default function InputField({
+  placeholder,
+  secure,
+  value,
+  onChangeText
+}: any) {
   return (
     <View style={styles.container}>
       <TextInput
@@ -8,6 +13,8 @@ export default function InputField({ placeholder, secure }: any) {
         placeholderTextColor="#bdbdbd"
         secureTextEntry={secure}
         style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );
@@ -16,10 +23,10 @@ export default function InputField({ placeholder, secure }: any) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 16, 
+    marginBottom: 16,
   },
   input: {
-    height: 32, 
+    height: 32,
     borderBottomWidth: 0.8,
     borderBottomColor: '#e6e7e8',
     fontSize: 14,

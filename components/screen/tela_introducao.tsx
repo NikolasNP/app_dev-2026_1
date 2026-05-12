@@ -9,12 +9,9 @@ export default function TelaIntroducao() {
   }
 
   function irParaAdotar() {
-    console.log('Ir para adoção');
+    router.push('/adotar');
   }
 
-  function irParaAjudar() {
-    console.log('Ir para ajudar');
-  }
   {/* botão funcional tela_cadastrar_animal*/ }
   function irParaCadastrarAnimal() {
     router.push('/cadastrar_animal');
@@ -40,10 +37,6 @@ export default function TelaIntroducao() {
 
         <TouchableOpacity style={styles.botaoAmarelo} onPress={irParaAdotar}>
           <Text style={styles.textoBotao}>ADOTAR</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.botaoAmarelo} onPress={irParaAjudar}>
-          <Text style={styles.textoBotao}>AJUDAR</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.botaoAmarelo} onPress={irParaCadastrarAnimal}>

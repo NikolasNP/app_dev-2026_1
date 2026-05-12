@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function Header() {
   return (
     <View style={styles.container}>
-      <Ionicons name="menu" size={24} color="#ffffff" />
+      <Ionicons name="menu" size={24} color="#434343" />
       <Text style={styles.title}>Cadastro Pessoal</Text>
     </View>
   );
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#ffffff',
+    color: '#434343',
     fontWeight: '500',
     marginLeft: 16, // espaço entre ícone e texto
   },

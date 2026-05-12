@@ -1,8 +1,8 @@
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-export default function PrimaryButton({ title }: any) {
+export default function PrimaryButton({ title, onPress }: any) {
   return (
-    <TouchableOpacity style={styles.button}>
+    <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
@@ -11,7 +11,7 @@ export default function PrimaryButton({ title }: any) {
 const styles = StyleSheet.create({
   button: {
     width: '100%',
-    maxWidth: 328, 
+    maxWidth: 328,
     height: 80,
     backgroundColor: '#cfe9e5',
     borderRadius: 4,
