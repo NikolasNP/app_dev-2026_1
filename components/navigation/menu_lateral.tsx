@@ -1,7 +1,14 @@
+// Importa os componentes para criar o menu lateral.
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+
+// Importa o roteador do Expo Router para navegar entre telas.
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
+
+// Importa a função de logout do Firebase Authentication.
 import { doc, getDoc } from 'firebase/firestore';
+
+// Importa funções para buscar documentos no Firestore.
 import React, { useEffect, useState } from 'react';
 import {
   Image,
@@ -11,10 +18,13 @@ import {
   View,
 } from 'react-native';
 
+// Importa a autenticação e o banco de dados configurados no Firebase.
 import { auth, db } from '../firebaseConfig';
 
+// Cria o navegador do tipo Drawer.
 const Drawer = createDrawerNavigator();
 
+// Componente reutilizável para os itens do menu.
 function ItemMenu({ texto, onPress }: { texto: string; onPress?: () => void }) {
   return (
     <TouchableOpacity style={styles.item} onPress={onPress}>
@@ -23,25 +33,35 @@ function ItemMenu({ texto, onPress }: { texto: string; onPress?: () => void }) {
   );
 }
 
+
+// Componente responsável pelo conteúdo exibido dentro do menu lateral.
 function ConteudoDrawer({ navigation }: any) {
   const router = useRouter();
 
+   // Controla se cada seção do menu está aberta ou fechada.
   const [atalhosAberto, setAtalhosAberto] = useState(true);
   const [informacoesAberto, setInformacoesAberto] = useState(true);
   const [configAberto, setConfigAberto] = useState(true);
-
+  
+    // Guarda o nome e a foto do usuário logado.
   const [nomeUsuario, setNomeUsuario] = useState('Usuário');
   const [fotoUsuario, setFotoUsuario] = useState<string | null>(null);
+ 
 
+  // Carrega os dados do usuário logado ao abrir o componente.
   useEffect(() => {
     async function carregarUsuario() {
       const usuarioLogado = auth.currentUser;
-
+   
+      // Se não houver usuário logado, encerra a função.
       if (!usuarioLogado) return;
+
+       // Busca o documento do usuário no Firestore usando o UID.
 
       const usuarioRef = doc(db, 'usuarios', usuarioLogado.uid);
       const usuarioSnap = await getDoc(usuarioRef);
-
+      
+      // Se o documento existir, atualiza nome e foto no menu.
       if (usuarioSnap.exists()) {
         const dados = usuarioSnap.data();
 
@@ -52,12 +72,14 @@ function ConteudoDrawer({ navigation }: any) {
 
     carregarUsuario();
   }, []);
-
+  
+  // Fecha o menu lateral e navega para a rota informada.
   function fecharEAbrir(rota: string) {
     navigation.closeDrawer();
     router.push(rota as any);
   }
-
+  
+  // Faz logout do usuário e volta para a tela inicial.
   async function sair() {
     await signOut(auth);
     navigation.closeDrawer();

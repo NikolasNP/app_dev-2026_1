@@ -1,9 +1,16 @@
+// Importa o componente Link do Expo Router.
+// Ele é utilizado para navegar entre telas.
 import { Link } from 'expo-router';
+
+// Importa o StyleSheet para criar estilos no React Native.
 import { StyleSheet } from 'react-native';
 
+// Importa componentes personalizados com suporte a tema claro/escuro.
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+
+// Componente principal da tela modal.
 export default function ModalScreen() {
   return (
     <ThemedView style={styles.container}>
@@ -27,3 +34,5 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
 });
+
+//tela temporária aberta sobre a aplicação.

@@ -1,7 +1,15 @@
+// Importa o componente Stack do Expo Router.
+// O Stack é utilizado para criar a navegação em pilha entre telas,
+// semelhante ao funcionamento de aplicativos mobile tradicionais.
+
 import { Stack } from 'expo-router';
 
+// Componente principal responsável pela configuração das rotas da aplicação.
 export default function Layout() {
   return (
+
+    // Componente Stack que gerencia as telas da aplicação.
+    // screenOptions permite definir configurações padrão para todas as telas.
     <Stack screenOptions={{ headerShown: false }}>
       {/* TELAS PRINCIPAIS */}
       <Stack.Screen name="index" />

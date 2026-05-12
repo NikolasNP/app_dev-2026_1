@@ -1,6 +1,13 @@
+// Importa o componente da tela de introdução.
+// Esse componente está localizado dentro da pasta components/screen.
+
 import TelaIntroducao from '../components/screen/tela_introducao';
 
+// Função principal da página inicial.
+// No Expo Router, o arquivo index.tsx representa a rota principal do aplicativo.
 export default function Index() {
+
+   // Renderiza a tela de introdução na aplicação.
   return <TelaIntroducao />;
 }
 
