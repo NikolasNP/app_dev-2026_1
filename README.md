@@ -44,6 +44,32 @@ This is an Expo project created with create-expo-app.
 
 ---
 
+# 📱 Gerar APK Android
+
+O projeto utiliza EAS Build.
+
+Instalar EAS CLI
+npm install -g eas-cli
+Login Expo
+eas login
+Configurar EAS
+eas build:configure
+⚙️ Configuração do eas.json
+{
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+# ☁️ Gerar APK via nuvem
+eas build --platform android --profile preview
+
+Ao final do build, o Expo gera um link para download do APK.
+
 # 🚀 Passo a passo para subir alterações para a branch main
 
 1. Abra o terminal dentro da pasta do projeto.
