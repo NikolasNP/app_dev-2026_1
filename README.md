@@ -24,6 +24,42 @@ O aplicativo permite:
 - TypeScript
 - EAS
 
+# 📁 Estrutura do projeto
+
+```text
+app_dev-2026_1/
+│
+├── app/
+│   ├── rotas do aplicativo
+│   ├── index.tsx
+│   ├── login.tsx
+│   ├── cadastro.tsx
+│   ├── adotar.tsx
+│   └── perfil.tsx
+│
+├── components/
+│   ├── componentes reutilizáveis
+│   │
+│   ├── navigation/
+│   │   └── menu_lateral.tsx
+│   │
+│   └── screen/
+│       ├── tela_login.tsx
+│       ├── tela_inicial.tsx
+│       ├── tela_adotar.tsx
+│       ├── tela_perfil.tsx
+│       └── tela_meus_pets.tsx
+│
+├── assets/
+│   ├── imagens e ícones
+│
+├── firebaseConfig.ts
+├── app.json
+├── eas.json
+├── package.json
+└── README.md
+```
+
 # 🔥 Firebase
 
 O projeto utiliza Firebase para:
