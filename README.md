@@ -12,7 +12,7 @@ O aplicativo permite:
 - Upload de fotos via câmera ou galeria
 - Navegação com Drawer/Menu lateral
 
-# Tecnologias utilizadas 🚀
+# Tecnologias utilizadas 
 - React Native
 - Expo
 - Expo Router
@@ -60,7 +60,7 @@ app_dev-2026_1/
 └── README.md
 ```
 
-# 🔥 Firebase
+# Firebase
 
 O projeto utiliza Firebase para:
 
@@ -74,7 +74,7 @@ O projeto utiliza Firebase para:
 - Perfil do usuário
 - Armazenamento de imagens em Base64
 
-# 📥 Passo a passo para baixar o projeto do GitHub para o repositório local
+#  Passo a passo para baixar o projeto do GitHub para o repositório local
 
 1. Instale as ferramentas necessárias no seu computador:
    - Git → https://git-scm.com/
@@ -114,7 +114,7 @@ O projeto utiliza Firebase para:
 
 ---
 
-# 📱 Gerar APK Android
+#  Gerar APK Android
 
 O projeto utiliza EAS Build.
 
@@ -138,7 +138,7 @@ eas build:configure
 
 ---
 
-# ⚙️ Configuração do eas.json
+#  Configuração do eas.json
 
 ```json
 {
@@ -155,7 +155,7 @@ eas build:configure
 
 ---
 
-# ☁️ Gerar APK via nuvem
+#  Gerar APK via nuvem
 
 ```bash
 eas build --platform android --profile preview
@@ -163,7 +163,7 @@ eas build --platform android --profile preview
 
 Ao final do build, o Expo gera um link para download do APK.
 
-# 🚀 Passo a passo para subir alterações para a branch main
+#  Passo a passo para subir alterações para a branch main
 
 1. Abra o terminal dentro da pasta do projeto.
 
@@ -189,7 +189,7 @@ Se a branch já estiver conectada ao repositório remoto, também é possível u
 
 ---
 
-# 🌿 Passo a passo para criar e trabalhar com branches
+#  Passo a passo para criar e trabalhar com branches
 
 Criar uma nova branch:
 
@@ -227,7 +227,7 @@ para continuar enviando alterações dessa branch.
 
 ---
 
-# 📱 Get started
+# Get started
 
 1. Install dependencies
 
@@ -242,7 +242,7 @@ This project uses file-based routing.
 
 ---
 
-# 🔄 Resetar o projeto
+#  Resetar o projeto
 
 Se quiser reiniciar o projeto base do Expo:
 
@@ -252,7 +252,7 @@ Esse comando move o código inicial para a pasta **app-example** e cria uma nova
 
 ---
 
-# 📚 Learn more
+#  Learn more
 
 Expo Documentation  
 https://docs.expo.dev
@@ -262,7 +262,7 @@ https://docs.expo.dev/tutorial/introduction/
 
 ---
 
-# 👥 Community
+# Community
 
 Expo GitHub  
 https://github.com/expo/expo
