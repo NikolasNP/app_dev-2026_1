@@ -83,6 +83,7 @@ export default function TelaMeusPets() {
     return () => unsubscribe();
   }, []);
 
+  // Alterna a visibilidade do pet entre disponível e oculto
   async function alternarDisponibilidade(animal: Animal) {
     try {
       await updateDoc(doc(db, 'animais', animal.id), {
@@ -96,6 +97,7 @@ export default function TelaMeusPets() {
     }
   }
 
+  // Caso o usuário não esteja autenticado
   if (!usuario) {
     return (
       <View style={styles.centralizador}>
@@ -115,6 +117,8 @@ export default function TelaMeusPets() {
     );
   }
 
+  
+  // Exibe loading enquanto os dados são carregados
   if (carregando) {
     return (
       <View style={styles.centralizador}>
