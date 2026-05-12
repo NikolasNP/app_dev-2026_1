@@ -68,13 +68,29 @@ O aplicativo permite:
 
 O projeto utiliza EAS Build.
 
-Instalar EAS CLI
+## Instalar EAS CLI
+
+```bash
 npm install -g eas-cli
-Login Expo
+```
+
+## Login Expo
+
+```bash
 eas login
-Configurar EAS
+```
+
+## Configurar EAS
+
+```bash
 eas build:configure
-⚙️ Configuração do eas.json
+```
+
+---
+
+# ⚙️ Configuração do eas.json
+
+```json
 {
   "build": {
     "preview": {
@@ -85,8 +101,15 @@ eas build:configure
     }
   }
 }
+```
+
+---
+
 # ☁️ Gerar APK via nuvem
+
+```bash
 eas build --platform android --profile preview
+```
 
 Ao final do build, o Expo gera um link para download do APK.
 
