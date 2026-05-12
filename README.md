@@ -1,8 +1,28 @@
-# Welcome to your Expo app 👋
+# MEAU 🐾
 
-This is an Expo project created with create-expo-app.
+Um Aplicativo mobile desenvolvido com React Native + Expo + Firebase para auxiliar no processo de adoção de animais.
 
----
+O aplicativo permite:
+
+- Cadastro e login de usuários
+- Cadastro de animais
+- Visualização de pets disponíveis para adoção
+- Tela de detalhes dos animais
+- Perfil do usuário
+- Upload de fotos via câmera ou galeria
+- Navegação com Drawer/Menu lateral
+
+# Tecnologias utilizadas 🚀
+- React Native
+- Expo
+- Expo Router
+- Firebase Authentication
+- Firebase Firestore
+- Expo Image Picker
+- Expo Image Manipulator
+- React Navigation Drawer
+- TypeScript
+- EAS
 
 # 📥 Passo a passo para baixar o projeto do GitHub para o repositório local
 
