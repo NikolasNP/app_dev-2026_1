@@ -109,7 +109,7 @@ function ConteudoDrawer({ navigation }: any) {
       <ItemMenu texto="Meus pets" onPress={() => fecharEAbrir('/meus_pets')} />
       <ItemMenu texto="Adotar" onPress={() => fecharEAbrir('/adotar')} />
       <ItemMenu texto="Favoritos" />
-      <ItemMenu texto="Chat" />
+      <ItemMenu texto="Conversas" onPress={() => fecharEAbrir('/conversas')} />
 
       <TouchableOpacity
         style={styles.blocoAtalhos}
