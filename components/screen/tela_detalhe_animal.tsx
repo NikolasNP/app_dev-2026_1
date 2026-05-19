@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import {
   Alert,
   Image,
@@ -8,12 +9,53 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { auth, db } from '../firebaseConfig';
 
 export default function TelaDetalheAnimal() {
   const router = useRouter();
   const { animal } = useLocalSearchParams();
 
   const dados = JSON.parse(animal as string);
+
+  async function abrirChatAdocao() {
+    const usuario = auth.currentUser;
+
+    if (!usuario) {
+      Alert.alert('Erro', 'Você precisa estar logado para iniciar uma conversa.');
+      router.replace('/login');
+      return;
+    }
+
+    if (usuario.uid === dados.usuarioId) {
+      Alert.alert('Aviso', 'Você não pode demonstrar interesse no seu próprio animal.');
+      return;
+    }
+
+    const chatId = `${dados.id}_${usuario.uid}`;
+
+    const chatRef = doc(db, 'chats', chatId);
+    const chatSnap = await getDoc(chatRef);
+
+    if (!chatSnap.exists()) {
+      await setDoc(chatRef, {
+        animalId: dados.id,
+        animalNome: dados.nomeAnimal,
+        animalFotoBase64: dados.fotoBase64 || '',
+        donoId: dados.usuarioId,
+        interessadoId: usuario.uid,
+        participantes: [dados.usuarioId, usuario.uid],
+        ultimaMensagem: '',
+        ativo: true,
+        criadoEm: serverTimestamp(),
+        atualizadoEm: serverTimestamp(),
+      });
+    }
+
+    router.push({
+      pathname: '/chat',
+      params: { chatId },
+    });
+  }
 
   return (
     <View style={styles.container}>
@@ -88,10 +130,7 @@ export default function TelaDetalheAnimal() {
             valor={dados.descricao || 'Nenhuma descrição informada.'}
           />
 
-          <TouchableOpacity
-            style={styles.botao}
-            onPress={() => Alert.alert('Interesse registrado', 'Você demonstrou interesse em adotar este animal.')}
-          >
+          <TouchableOpacity style={styles.botao} onPress={abrirChatAdocao}>
             <Text style={styles.textoBotao}>PRETENDO ADOTAR</Text>
           </TouchableOpacity>
         </View>
