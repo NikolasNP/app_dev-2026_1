@@ -1,7 +1,14 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { addDoc, arrayUnion, collection, doc, setDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+} from 'firebase/firestore';
 import { useState } from 'react';
 import {
   Alert,
@@ -69,7 +76,6 @@ export default function TelaCadastrarAnimal() {
         }
       );
 
-      // opcional (preview)
       setFotoUri(manipResult.uri);
 
       if (manipResult.base64) {
@@ -105,7 +111,6 @@ export default function TelaCadastrarAnimal() {
         }
       );
 
-      // opcional (preview)
       setFotoUri(manipResult.uri);
 
       if (manipResult.base64) {
@@ -134,6 +139,24 @@ export default function TelaCadastrarAnimal() {
     try {
       setCarregando(true);
 
+      // Busca a localização cadastrada do dono no Firestore
+      const usuarioRef = doc(db, 'usuarios', usuario.uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+
+      let latitude = null;
+      let longitude = null;
+      let localizacaoTexto = '';
+
+      if (usuarioSnap.exists()) {
+        const dadosUsuario = usuarioSnap.data();
+
+        latitude = dadosUsuario.latitude || null;
+        longitude = dadosUsuario.longitude || null;
+        localizacaoTexto =
+          dadosUsuario.localizacaoTexto ||
+          `${dadosUsuario.cidade || ''}${dadosUsuario.cidade && dadosUsuario.estado ? ' - ' : ''}${dadosUsuario.estado || ''}`;
+      }
+
       const animalRef = await addDoc(collection(db, 'animais'), {
         finalidade: 'Adoção',
         nomeAnimal,
@@ -144,11 +167,20 @@ export default function TelaCadastrarAnimal() {
         temperamento,
         saude,
         descricao,
-
-        // Foto local, sem Firebase Storage
         fotoBase64,
 
+        // Dono do animal
         usuarioId: usuario.uid,
+
+        // Localização fixa do animal copiada do cadastro do dono
+        latitude,
+        longitude,
+        localizacaoTexto,
+
+        // Campos úteis para filtros futuros no mapa
+        disponivel: true,
+        removido: false,
+
         criadoEm: new Date(),
       });
 

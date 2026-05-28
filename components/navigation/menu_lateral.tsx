@@ -108,6 +108,7 @@ function ConteudoDrawer({ navigation }: any) {
       <ItemMenu texto="Meu perfil" onPress={() => fecharEAbrir('/perfil')} />
       <ItemMenu texto="Meus pets" onPress={() => fecharEAbrir('/meus_pets')} />
       <ItemMenu texto="Adotar" onPress={() => fecharEAbrir('/adotar')} />
+      <ItemMenu texto="Pets próximos" onPress={() => fecharEAbrir('/pets_proximos')}/>
       <ItemMenu texto="Favoritos" />
       <ItemMenu texto="Conversas" onPress={() => fecharEAbrir('/conversas')} />
 

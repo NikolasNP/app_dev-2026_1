@@ -1,68 +1,49 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-    doc,
-    getDoc,
-    updateDoc
-} from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import { db } from '../firebaseConfig';
 
 type Animal = {
   id: string;
-
   usuarioId: string;
-
   nomeAnimal: string;
-
   fotoBase64?: string;
-
   especie?: string;
-
   sexo?: string;
-
   idade?: string;
-
   porte?: string;
-
   localizacao?: string;
-
+  localizacaoTexto?: string;
+  latitude?: number;
+  longitude?: number;
   castrado?: boolean;
-
   vacinado?: boolean;
-
   vermifugado?: boolean;
-
   descricao?: string;
-
   exigencias?: string;
-
   necessidades?: string;
-
   finalidade?: string;
-
   disponivel?: boolean;
 };
 
 export default function TelaDetalhePet() {
   const router = useRouter();
-
   const { id } = useLocalSearchParams();
 
   const [animal, setAnimal] = useState<Animal | null>(null);
-
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -72,7 +53,6 @@ export default function TelaDetalhePet() {
   async function carregarPet() {
     try {
       const docRef = doc(db, 'animais', id as string);
-
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
@@ -81,17 +61,14 @@ export default function TelaDetalhePet() {
         return;
       }
 
-      const dados = snapshot.data() as Animal;
+      const dados = snapshot.data() as Omit<Animal, 'id'>;
 
       setAnimal({
-        id: snapshot.id,
         ...dados,
+        id: snapshot.id,
       });
     } catch (error: any) {
-      Alert.alert(
-        'Erro',
-        error.message || 'Erro ao carregar pet.'
-      );
+      Alert.alert('Erro', error.message || 'Erro ao carregar pet.');
     } finally {
       setCarregando(false);
     }
@@ -122,46 +99,32 @@ export default function TelaDetalhePet() {
         disponivel: !animal.disponivel,
       });
     } catch (error: any) {
-      Alert.alert(
-        'Erro',
-        error.message || 'Erro ao atualizar pet.'
-      );
+      Alert.alert('Erro', error.message || 'Erro ao atualizar pet.');
     }
   }
 
   async function removerPet() {
     if (!animal) return;
 
-    const confirmar = window.confirm(
-        `Deseja remover ${animal.nomeAnimal}?`
-    );
+    const confirmar = window.confirm(`Deseja remover ${animal.nomeAnimal}?`);
 
     if (!confirmar) return;
 
     try {
-        await updateDoc(
-        doc(db, 'animais', animal.id),
-        {
-            removido: true,
-        }
-        );
+      await updateDoc(doc(db, 'animais', animal.id), {
+        removido: true,
+      });
 
-        router.replace('/remover_pet_sucesso');
+      router.replace('/remover_pet_sucesso');
     } catch (error: any) {
-        Alert.alert(
-        'Erro',
-        error.message || 'Erro ao remover pet.'
-        );
+      Alert.alert('Erro', error.message || 'Erro ao remover pet.');
     }
-    }
+  }
 
   if (carregando) {
     return (
       <View style={styles.centralizador}>
-        <ActivityIndicator
-          size="large"
-          color="#88c9bf"
-        />
+        <ActivityIndicator size="large" color="#88c9bf" />
       </View>
     );
   }
@@ -176,193 +139,124 @@ export default function TelaDetalhePet() {
 
   return (
     <View style={styles.container}>
-      {/* STATUS BAR */}
       <View style={styles.statusBar} />
 
-      {/* APP BAR */}
       <View style={styles.appBar}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="#434343"
-          />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#434343" />
         </TouchableOpacity>
 
-        <Text style={styles.appBarTitulo}>
-          {animal.nomeAnimal}
-        </Text>
+        <Text style={styles.appBarTitulo}>{animal.nomeAnimal}</Text>
 
-        <TouchableOpacity
-          onPress={compartilharPet}
-        >
-          <Ionicons
-            name="share-social-outline"
-            size={24}
-            color="#434343"
-          />
+        <TouchableOpacity onPress={compartilharPet}>
+          <Ionicons name="share-social-outline" size={24} color="#434343" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-      >
-        {/* FOTO */}
+      <ScrollView showsVerticalScrollIndicator={false}>
         {animal.fotoBase64 ? (
-          <Image
-            source={{ uri: animal.fotoBase64 }}
-            style={styles.foto}
-          />
+          <Image source={{ uri: animal.fotoBase64 }} style={styles.foto} />
         ) : (
           <View style={styles.fotoPlaceholder}>
-            <Ionicons
-              name="paw-outline"
-              size={60}
-              color="#999"
-            />
+            <Ionicons name="paw-outline" size={60} color="#999" />
           </View>
         )}
 
-        {/* INFOS */}
         <View style={styles.conteudo}>
-          {/* LINHA 1 */}
           <View style={styles.linha}>
-            <InfoItem
-              titulo="SEXO"
-              valor={animal.sexo || '-'}
-            />
+            <InfoItem titulo="SEXO" valor={animal.sexo || '-'} />
 
             <InfoItem
               titulo="LOCALIZAÇÃO"
               valor={
-                animal.localizacao || '-'
+                animal.localizacaoTexto ||
+                animal.localizacao ||
+                'Não definida'
               }
             />
           </View>
 
-          {/* LINHA 2 */}
           <View style={styles.linha}>
             <InfoItem
               titulo="CASTRADO"
-              valor={
-                animal.castrado ? 'Sim' : 'Não'
-              }
+              valor={animal.castrado ? 'Sim' : 'Não'}
             />
 
             <InfoItem
               titulo="VERMIFUGADO"
-              valor={
-                animal.vermifugado
-                  ? 'Sim'
-                  : 'Não'
-              }
+              valor={animal.vermifugado ? 'Sim' : 'Não'}
             />
           </View>
 
-          {/* LINHA 3 */}
           <View style={styles.linha}>
             <InfoItem
               titulo="VACINADO"
-              valor={
-                animal.vacinado ? 'Sim' : 'Não'
-              }
+              valor={animal.vacinado ? 'Sim' : 'Não'}
             />
 
-            <InfoItem
-              titulo="PORTE"
-              valor={animal.porte || '-'}
-            />
+            <InfoItem titulo="PORTE" valor={animal.porte || '-'} />
           </View>
 
-          {/* LINHA 4 */}
           <View style={styles.linha}>
-            <InfoItem
-              titulo="IDADE"
-              valor={animal.idade || '-'}
-            />
+            <InfoItem titulo="IDADE" valor={animal.idade || '-'} />
 
-            <InfoItem
-              titulo="FINALIDADE"
-              valor={
-                animal.finalidade || '-'
-              }
-            />
+            <InfoItem titulo="FINALIDADE" valor={animal.finalidade || '-'} />
           </View>
 
-          {/* DESCRIÇÃO */}
-          <SectionTitle
-            titulo={`MAIS SOBRE ${animal.nomeAnimal.toUpperCase()}`}
-          />
+          <SectionTitle titulo={`MAIS SOBRE ${animal.nomeAnimal.toUpperCase()}`} />
 
           <Text style={styles.textoDescricao}>
-            {animal.descricao ||
-              'Sem descrição cadastrada.'}
+            {animal.descricao || 'Sem descrição cadastrada.'}
           </Text>
 
-          {/* EXIGÊNCIAS */}
-          <SectionTitle
-            titulo="EXIGÊNCIAS DO DOADOR"
-          />
+          <SectionTitle titulo="EXIGÊNCIAS DO DOADOR" />
 
           <Text style={styles.textoDescricao}>
-            {animal.exigencias ||
-              'Nenhuma exigência cadastrada.'}
+            {animal.exigencias || 'Nenhuma exigência cadastrada.'}
           </Text>
 
-          {/* NECESSIDADES */}
-          <SectionTitle
-            titulo={`O ${animal.nomeAnimal.toUpperCase()} PRECISA DE`}
-          />
+          <SectionTitle titulo={`O ${animal.nomeAnimal.toUpperCase()} PRECISA DE`} />
 
           <Text style={styles.textoDescricao}>
-            {animal.necessidades ||
-              'Nenhuma necessidade cadastrada.'}
+            {animal.necessidades || 'Nenhuma necessidade cadastrada.'}
           </Text>
 
-          {/* BOTÕES */}
           <View style={styles.areaBotoes}>
             <TouchableOpacity
               style={styles.botao}
               onPress={() =>
                 router.push({
-                  pathname:
-                    '/interessados_pet',
-                  params: {
-                    id: animal.id,
-                  },
+                  pathname: '/editar_localizacao_pet' as any,
+                  params: { id: animal.id },
                 })
               }
             >
-              <Text style={styles.textoBotao}>
-                VER INTERESSADOS
-              </Text>
+              <Text style={styles.textoBotao}>ALTERAR LOCALIZAÇÃO DO PET</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.botao}
-              onPress={
-                alternarDisponibilidade
+              onPress={() =>
+                router.push({
+                  pathname: '/interessados_pet',
+                  params: { id: animal.id },
+                })
               }
             >
+              <Text style={styles.textoBotao}>VER INTERESSADOS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.botao} onPress={alternarDisponibilidade}>
               <Text style={styles.textoBotao}>
-                {animal.disponivel !== false
-                  ? 'OCULTAR PET'
-                  : 'MOSTRAR PET'}
+                {animal.disponivel !== false ? 'OCULTAR PET' : 'MOSTRAR PET'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.botao,
-                styles.botaoRemover,
-              ]}
+              style={[styles.botao, styles.botaoRemover]}
               onPress={removerPet}
             >
-              <Text style={styles.textoBotao}>
-                REMOVER PET
-              </Text>
+              <Text style={styles.textoBotao}>REMOVER PET</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -371,37 +265,17 @@ export default function TelaDetalhePet() {
   );
 }
 
-/* COMPONENTE AUXILIAR */
-function InfoItem({
-  titulo,
-  valor,
-}: {
-  titulo: string;
-  valor: string;
-}) {
+function InfoItem({ titulo, valor }: { titulo: string; valor: string }) {
   return (
     <View style={styles.infoItem}>
-      <Text style={styles.infoTitulo}>
-        {titulo}
-      </Text>
-
-      <Text style={styles.infoValor}>
-        {valor}
-      </Text>
+      <Text style={styles.infoTitulo}>{titulo}</Text>
+      <Text style={styles.infoValor}>{valor}</Text>
     </View>
   );
 }
 
-function SectionTitle({
-  titulo,
-}: {
-  titulo: string;
-}) {
-  return (
-    <Text style={styles.sectionTitle}>
-      {titulo}
-    </Text>
-  );
+function SectionTitle({ titulo }: { titulo: string }) {
+  return <Text style={styles.sectionTitle}>{titulo}</Text>;
 }
 
 const styles = StyleSheet.create({

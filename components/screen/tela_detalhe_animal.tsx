@@ -95,7 +95,7 @@ export default function TelaDetalheAnimal() {
             <Info titulo="IDADE" valor={dados.idade || 'Não informado'} />
           </View>
 
-          <Info titulo="LOCALIZAÇÃO" valor="Samambaia Sul – Distrito Federal" />
+          <Info titulo="LOCALIZAÇÃO" valor={dados.localizacaoTexto || 'Localização não informada'}/>
 
           <View style={styles.divisor} />
 

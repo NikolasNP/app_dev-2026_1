@@ -1,18 +1,20 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
 import { auth, db } from '../firebaseConfig';
 
 type Usuario = {
@@ -26,6 +28,9 @@ type Usuario = {
   usuario?: string;
   fotoBase64?: string;
   animaisIds?: string[];
+  latitude?: number | null;
+  longitude?: number | null;
+  localizacaoTexto?: string;
 };
 
 export default function TelaPerfil() {
@@ -133,15 +138,59 @@ export default function TelaPerfil() {
   }
 
   function escolherFoto() {
-    Alert.alert(
-      'Foto de perfil',
-      'Escolha uma opção',
-      [
-        { text: 'Câmera', onPress: tirarFoto },
-        { text: 'Galeria', onPress: escolherGaleria },
-        { text: 'Cancelar', style: 'cancel' },
-      ]
-    );
+    Alert.alert('Foto de perfil', 'Escolha uma opção', [
+      { text: 'Câmera', onPress: tirarFoto },
+      { text: 'Galeria', onPress: escolherGaleria },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  }
+
+  async function usarLocalizacaoAtual() {
+    const user = auth.currentUser;
+
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não logado.');
+      return;
+    }
+
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'Permita o acesso à localização.');
+      return;
+    }
+
+    const localizacao = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
+    const latitudeReal = localizacao.coords.latitude;
+    const longitudeReal = localizacao.coords.longitude;
+
+    // Localização aproximada para não expor o endereço exato do usuário
+    const latitudeAproximada = Number(latitudeReal.toFixed(3));
+    const longitudeAproximada = Number(longitudeReal.toFixed(3));
+
+    const localizacaoTexto =
+      usuario?.cidade && usuario?.estado
+        ? `${usuario.cidade} - ${usuario.estado}`
+        : 'Localização aproximada';
+
+    await updateDoc(doc(db, 'usuarios', user.uid), {
+      latitude: latitudeAproximada,
+      longitude: longitudeAproximada,
+      localizacaoTexto,
+      localizacaoAtualizadaEm: new Date(),
+    });
+
+    setUsuario((atual) => ({
+      ...atual,
+      latitude: latitudeAproximada,
+      longitude: longitudeAproximada,
+      localizacaoTexto,
+    }));
+
+    Alert.alert('Sucesso', 'Localização aproximada salva como endereço fixo.');
   }
 
   if (carregando) {
@@ -196,11 +245,31 @@ export default function TelaPerfil() {
         <Campo titulo="TELEFONE" valor={usuario?.telefone} />
         <Campo titulo="NOME DE USUÁRIO" valor={usuario?.usuario} />
         <Campo
+          titulo="LOCALIZAÇÃO DO MAPA"
+          valor={
+            usuario?.latitude && usuario?.longitude
+              ? `${usuario.latitude}, ${usuario.longitude}`
+              : 'Não definida'
+          }
+        />
+        <Campo
           titulo="HISTÓRICO"
           valor={`Cadastrou ${usuario?.animaisIds?.length || 0} pet(s)`}
         />
 
-        <TouchableOpacity style={styles.botao}>
+        <TouchableOpacity
+          style={styles.botaoLocalizacao}
+          onPress={usarLocalizacaoAtual}
+        >
+          <Text style={styles.textoBotao}>
+            USAR MINHA LOCALIZAÇÃO ATUAL COMO ENDEREÇO FIXO
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.botao}
+          onPress={() => router.push('/editar_perfil')}
+        >
           <Text style={styles.textoBotao}>EDITAR PERFIL</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -304,6 +373,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  botaoLocalizacao: {
+    width: '90%',
+    backgroundColor: '#cfe9e5',
+    paddingVertical: 15,
+    alignItems: 'center',
+    borderRadius: 4,
+    elevation: 3,
+    marginBottom: 12,
+  },
+
   botao: {
     width: '90%',
     backgroundColor: '#88c9bf',
@@ -318,6 +397,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     color: '#434343',
+    textAlign: 'center',
   },
 
   centralizador: {
