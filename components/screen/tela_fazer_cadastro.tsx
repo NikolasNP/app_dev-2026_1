@@ -124,6 +124,9 @@ export default function FazerCadastro() {
         telefone,
         usuario,
         fotoBase64: fotoBase64 || '',
+        latitude: null,
+        longitude: null,
+        localizacaoTexto: `${cidade} - ${estado}`,
         criadoEm: new Date(),
         animaisIds: [],
       });
