@@ -1,5 +1,17 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from 'firebase/firestore';
+
+import * as Notifications from 'expo-notifications';
 import {
   Alert,
   Image,
@@ -30,6 +42,53 @@ export default function TelaDetalheAnimal() {
       Alert.alert('Aviso', 'Você não pode demonstrar interesse no seu próprio animal.');
       return;
     }
+
+    // pedir permissão
+await Notifications.requestPermissionsAsync();
+
+    // verifica se já existe interesse
+const interesseQuery = query(
+  collection(db, 'interesses'),
+  where('animalId', '==', dados.id),
+  where(
+    'usuarioInteressadoId',
+    '==',
+    usuario.uid
+  )
+);
+
+const interesseExistente =
+  await getDocs(interesseQuery);
+
+// só cria se não existir
+if (interesseExistente.empty) {
+
+  await addDoc(
+    collection(db, 'interesses'),
+    {
+      animalId: dados.id,
+      donoId: dados.usuarioId,
+      usuarioInteressadoId:
+        usuario.uid,
+      data: serverTimestamp(),
+      status: 'pendente',
+    }
+  );
+
+  // notificação simples
+  await Notifications.scheduleNotificationAsync(
+    {
+      content: {
+        title:
+          'Interesse enviado',
+        body:
+          `Você demonstrou interesse em ${dados.nomeAnimal}`,
+      },
+
+      trigger: null,
+    }
+  );
+}
 
     const chatId = `${dados.id}_${usuario.uid}`;
 
