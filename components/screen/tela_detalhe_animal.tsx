@@ -85,7 +85,9 @@ if (interesseExistente.empty) {
           `Você demonstrou interesse em ${dados.nomeAnimal}`,
       },
 
-      trigger: null,
+      trigger: {
+  seconds: 2,
+}
     }
   );
 }
