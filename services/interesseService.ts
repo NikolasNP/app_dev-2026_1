@@ -1,17 +1,17 @@
 import {
-    addDoc,
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    query,
-    where
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where
 } from 'firebase/firestore';
 
 import { db } from '../components/firebaseConfig';
 
 import {
-    enviarPush
+  enviarPush
 } from './notificationService';
 
 export async function demonstrarInteresse(

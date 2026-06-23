@@ -68,6 +68,9 @@ export default function TelaLogin() {
             doc(db, 'usuarios', user.uid),
             {
               expoPushToken: token
+            },
+            {
+              merge: true
             }
           );
 

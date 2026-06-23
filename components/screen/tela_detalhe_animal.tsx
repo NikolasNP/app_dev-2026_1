@@ -25,6 +25,7 @@ import {
   enviarPush
 } from '../../services/notificationService';
 
+
 export default function TelaDetalheAnimal() {
   const router = useRouter();
   const { animal } = useLocalSearchParams();
@@ -88,102 +89,36 @@ export default function TelaDetalheAnimal() {
   }
 
   async function abrirChatAdocao() {
-    const usuario = auth.currentUser;
+
+    const usuario =
+      auth.currentUser;
 
     if (!usuario) {
-      Alert.alert('Erro', 'Você precisa estar logado para iniciar uma conversa.');
-      router.replace('/login');
+
+      Alert.alert(
+        'Erro',
+        'Você precisa estar logado para iniciar uma conversa.'
+      );
+
+      router.replace(
+        '/login'
+      );
+
       return;
+
     }
 
-    if (usuario.uid === dados.usuarioId) {
-      Alert.alert('Aviso', 'Você não pode demonstrar interesse no seu próprio animal.');
+    if (
+      usuario.uid ===
+      dados.usuarioId
+    ) {
+
+      Alert.alert(
+        'Aviso',
+        'Você não pode demonstrar interesse no seu próprio animal.'
+      );
+
       return;
-    }
-
-    // pedir permissão
-await Notifications.requestPermissionsAsync();
-
-    // verifica se já existe interesse
-const interesseQuery = query(
-  collection(db, 'interesses'),
-  where('animalId', '==', dados.id),
-  where(
-    'usuarioInteressadoId',
-    '==',
-    usuario.uid
-  )
-);
-
-const interesseExistente =
-  await getDocs(interesseQuery);
-
-// só cria se não existir
-if (interesseExistente.empty) {
-
-  await addDoc(
-    collection(db, 'interesses'),
-    {
-      animalId: dados.id,
-      donoId: dados.usuarioId,
-      usuarioInteressadoId:
-        usuario.uid,
-      data: serverTimestamp(),
-      status: 'pendente',
-    }
-  );
-
-  // notificação simples
-  await Notifications.scheduleNotificationAsync(
-    {
-      content: {
-        title:
-          'Interesse enviado',
-        body:
-          `Você demonstrou interesse em ${dados.nomeAnimal}`,
-      },
-
-      trigger: {
-  seconds: 2,
-}
-    }
-  );
-}
-
-    const chatId = `${dados.id}_${usuario.uid}`;
-
-    const chatRef = doc(db, 'chats', chatId);
-    const chatSnap = await getDoc(chatRef);
-
-    if (!chatSnap.exists()) {
-
-      await setDoc(chatRef, {
-        animalId: dados.id,
-        animalNome: dados.nomeAnimal,
-        animalFotoBase64:
-          dados.fotoBase64 || '',
-
-        donoId:
-          dados.usuarioId,
-
-        interessadoId:
-          usuario.uid,
-
-        participantes: [
-          dados.usuarioId,
-          usuario.uid
-        ],
-
-        ultimaMensagem: '',
-
-        ativo: true,
-
-        criadoEm:
-          serverTimestamp(),
-
-        atualizadoEm:
-          serverTimestamp(),
-      });
 
     }
 
@@ -191,10 +126,71 @@ if (interesseExistente.empty) {
       usuario.uid
     );
 
+    const chatId =
+      `${dados.id}_${usuario.uid}`;
+
+    const chatRef =
+      doc(
+        db,
+        'chats',
+        chatId
+      );
+
+    const chatSnap =
+      await getDoc(
+        chatRef
+      );
+
+    if (
+      !chatSnap.exists()
+    ) {
+
+      await setDoc(
+        chatRef,
+        {
+          animalId:
+            dados.id,
+
+          animalNome:
+            dados.nomeAnimal,
+
+          animalFotoBase64:
+            dados.fotoBase64 || '',
+
+          donoId:
+            dados.usuarioId,
+
+          interessadoId:
+            usuario.uid,
+
+          participantes: [
+            dados.usuarioId,
+            usuario.uid
+          ],
+
+          ultimaMensagem: '',
+
+          ativo: true,
+
+          criadoEm:
+            serverTimestamp(),
+
+          atualizadoEm:
+            serverTimestamp(),
+        }
+      );
+
+    }
+
     router.push({
-      pathname: '/chat',
-      params: { chatId },
+      pathname:
+        '/chat',
+
+      params: {
+        chatId
+      },
     });
+
   }
 
   return (

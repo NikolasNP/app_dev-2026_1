@@ -16,15 +16,32 @@ export default function Layout() {
           (notification) => {
 
             console.log(
-              'Notificação recebida:',
+              '📩 Notificação recebida:',
               notification
             );
 
           }
         );
 
+    const resposta =
+      Notifications
+        .addNotificationResponseReceivedListener(
+          (response) => {
+
+            console.log(
+              '👆 Notificação clicada:',
+              response
+            );
+
+          }
+        );
+
     return () => {
+
       sub.remove();
+
+      resposta.remove();
+
     };
 
   }, []);
@@ -37,25 +54,43 @@ export default function Layout() {
       }}
     >
 
-      {/* TELAS PRINCIPAIS */}
-      <Stack.Screen name="index" />
-      <Stack.Screen name="cadastro" />
-      <Stack.Screen name="cadastrar_animal" />
-      <Stack.Screen name="adotar" />
+      {/* PRINCIPAIS */}
+      <Stack.Screen
+        name="index"
+      />
 
-      {/* DETALHE PÚBLICO */}
-      <Stack.Screen name="detalhe_animal" />
+      <Stack.Screen
+        name="cadastro"
+      />
+
+      <Stack.Screen
+        name="cadastrar_animal"
+      />
+
+      <Stack.Screen
+        name="adotar"
+      />
+
+      {/* DETALHE */}
+      <Stack.Screen
+        name="detalhe_animal"
+      />
 
       {/* MEUS PETS */}
-      <Stack.Screen name="meus_pets" />
+      <Stack.Screen
+        name="meus_pets"
+      />
 
-      {/* DETALHE DO PET DO DONO */}
-      <Stack.Screen name="detalhe_meu_pet" />
+      <Stack.Screen
+        name="detalhe_meu_pet"
+      />
 
       {/* INTERESSADOS */}
-      <Stack.Screen name="interessados_pet" />
+      <Stack.Screen
+        name="interessados_pet"
+      />
 
-      {/* SUCESSO */}
+      {/* OUTRAS */}
       <Stack.Screen
         name="remover_pet_sucesso"
       />
@@ -63,4 +98,5 @@ export default function Layout() {
     </Stack>
 
   );
+
 }
