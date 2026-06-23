@@ -101,6 +101,55 @@ export default function TelaDetalheAnimal() {
       return;
     }
 
+    // pedir permissão
+await Notifications.requestPermissionsAsync();
+
+    // verifica se já existe interesse
+const interesseQuery = query(
+  collection(db, 'interesses'),
+  where('animalId', '==', dados.id),
+  where(
+    'usuarioInteressadoId',
+    '==',
+    usuario.uid
+  )
+);
+
+const interesseExistente =
+  await getDocs(interesseQuery);
+
+// só cria se não existir
+if (interesseExistente.empty) {
+
+  await addDoc(
+    collection(db, 'interesses'),
+    {
+      animalId: dados.id,
+      donoId: dados.usuarioId,
+      usuarioInteressadoId:
+        usuario.uid,
+      data: serverTimestamp(),
+      status: 'pendente',
+    }
+  );
+
+  // notificação simples
+  await Notifications.scheduleNotificationAsync(
+    {
+      content: {
+        title:
+          'Interesse enviado',
+        body:
+          `Você demonstrou interesse em ${dados.nomeAnimal}`,
+      },
+
+      trigger: {
+  seconds: 2,
+}
+    }
+  );
+}
+
     const chatId = `${dados.id}_${usuario.uid}`;
 
     const chatRef = doc(db, 'chats', chatId);
