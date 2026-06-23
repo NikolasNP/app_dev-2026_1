@@ -1,8 +1,36 @@
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { auth } from '../firebaseConfig';
+
+import {
+  signInWithEmailAndPassword
+} from 'firebase/auth';
+
+import {
+  doc,
+  setDoc
+} from 'firebase/firestore';
+
+import {
+  useState
+} from 'react';
+
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+
+import {
+  auth,
+  db
+} from '../firebaseConfig';
+
+import {
+  registerForPushNotifications
+} from '../../services/notificationService';
+
 
 export default function TelaLogin() {
   const router = useRouter();
@@ -26,9 +54,47 @@ export default function TelaLogin() {
       );
 
       if (usuarioCredencial.user) {
-        Alert.alert('Sucesso', 'Login realizado com sucesso');
-        router.replace('/tela_inicial');
+
+      const user = usuarioCredencial.user;
+
+      try {
+
+        const token =
+          await registerForPushNotifications();
+
+        if (token) {
+
+          await setDoc(
+            doc(db, 'usuarios', user.uid),
+            {
+              expoPushToken: token
+            }
+          );
+
+          console.log(
+            'Token salvo:',
+            token
+          );
+        }
+
+      } catch (erro) {
+
+        console.log(
+          'Erro ao salvar token',
+          erro
+        );
+
       }
+
+      Alert.alert(
+        'Sucesso',
+        'Login realizado com sucesso'
+      );
+
+      router.replace(
+        '/tela_inicial'
+      );
+    }
 
     } catch (error: any) {
 

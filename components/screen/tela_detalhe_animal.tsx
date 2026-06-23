@@ -10,8 +10,6 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore';
-
-import * as Notifications from 'expo-notifications';
 import {
   Alert,
   Image,
@@ -23,11 +21,71 @@ import {
 } from 'react-native';
 import { auth, db } from '../firebaseConfig';
 
+import {
+  enviarPush
+} from '../../services/notificationService';
+
 export default function TelaDetalheAnimal() {
   const router = useRouter();
   const { animal } = useLocalSearchParams();
 
   const dados = JSON.parse(animal as string);
+
+  async function registrarInteresse(
+    interessadoId: string
+  ) {
+
+    const interesseExiste =
+      await getDocs(
+        query(
+          collection(db, 'interesses'),
+          where('petId', '==', dados.id),
+          where(
+            'interessadoId',
+            '==',
+            interessadoId
+          )
+        )
+      );
+
+    if (!interesseExiste.empty) {
+      return;
+    }
+
+    await addDoc(
+      collection(db, 'interesses'),
+      {
+        petId: dados.id,
+        donoId: dados.usuarioId,
+        interessadoId,
+        criadoEm: serverTimestamp(),
+        status: 'novo',
+      }
+    );
+
+    const donoSnap =
+      await getDoc(
+        doc(
+          db,
+          'usuarios',
+          dados.usuarioId
+        )
+      );
+
+    const token =
+      donoSnap.data()?.expoPushToken;
+
+    if (token) {
+
+      await enviarPush(
+        token,
+        'Novo interesse ❤️',
+        `Alguém demonstrou interesse em ${dados.nomeAnimal}`
+      );
+
+    }
+
+  }
 
   async function abrirChatAdocao() {
     const usuario = auth.currentUser;
@@ -98,19 +156,40 @@ if (interesseExistente.empty) {
     const chatSnap = await getDoc(chatRef);
 
     if (!chatSnap.exists()) {
+
       await setDoc(chatRef, {
         animalId: dados.id,
         animalNome: dados.nomeAnimal,
-        animalFotoBase64: dados.fotoBase64 || '',
-        donoId: dados.usuarioId,
-        interessadoId: usuario.uid,
-        participantes: [dados.usuarioId, usuario.uid],
+        animalFotoBase64:
+          dados.fotoBase64 || '',
+
+        donoId:
+          dados.usuarioId,
+
+        interessadoId:
+          usuario.uid,
+
+        participantes: [
+          dados.usuarioId,
+          usuario.uid
+        ],
+
         ultimaMensagem: '',
+
         ativo: true,
-        criadoEm: serverTimestamp(),
-        atualizadoEm: serverTimestamp(),
+
+        criadoEm:
+          serverTimestamp(),
+
+        atualizadoEm:
+          serverTimestamp(),
       });
+
     }
+
+    await registrarInteresse(
+      usuario.uid
+    );
 
     router.push({
       pathname: '/chat',
