@@ -1,16 +1,42 @@
-// Importa o componente Stack do Expo Router.
-// O Stack é utilizado para criar a navegação em pilha entre telas,
-// semelhante ao funcionamento de aplicativos mobile tradicionais.
-
 import { Stack } from 'expo-router';
 
-// Componente principal responsável pela configuração das rotas da aplicação.
+import {
+  useEffect
+} from 'react';
+
+import * as Notifications from 'expo-notifications';
+
 export default function Layout() {
+
+  useEffect(() => {
+
+    const sub =
+      Notifications
+        .addNotificationReceivedListener(
+          (notification) => {
+
+            console.log(
+              'Notificação recebida:',
+              notification
+            );
+
+          }
+        );
+
+    return () => {
+      sub.remove();
+    };
+
+  }, []);
+
   return (
 
-    // Componente Stack que gerencia as telas da aplicação.
-    // screenOptions permite definir configurações padrão para todas as telas.
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+
       {/* TELAS PRINCIPAIS */}
       <Stack.Screen name="index" />
       <Stack.Screen name="cadastro" />
@@ -29,8 +55,12 @@ export default function Layout() {
       {/* INTERESSADOS */}
       <Stack.Screen name="interessados_pet" />
 
-      {/* SUCESSO AO REMOVER */}
-      <Stack.Screen name="remover_pet_sucesso" />
+      {/* SUCESSO */}
+      <Stack.Screen
+        name="remover_pet_sucesso"
+      />
+
     </Stack>
+
   );
 }
