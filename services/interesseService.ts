@@ -5,75 +5,52 @@ import {
   getDoc,
   getDocs,
   query,
-  where
+  where,
 } from 'firebase/firestore';
-
 import { db } from '../components/firebaseConfig';
-
-import {
-  enviarPush
-} from './notificationService';
+import { enviarPush } from './notificationService';
 
 export async function demonstrarInteresse(
- petId: string,
- interessadoId: string
+  petId: string,
+  interessadoId: string
 ) {
-
- const interesseExiste =
-   await getDocs(
-     query(
-       collection(db,'interesses'),
-       where('petId','==',petId),
-       where(
-         'interessadoId',
-         '==',
-         interessadoId
-       )
-     )
-   );
-
- if (!interesseExiste.empty) {
-   return;
- }
-
- const pet =
-  await getDoc(
-   doc(db,'pets',petId)
+  const interesseExiste = await getDocs(
+    query(
+      collection(db, 'interesses'),
+      where('petId', '==', petId),
+      where('interessadoId', '==', interessadoId)
+    )
   );
 
- const petData = pet.data();
+  if (!interesseExiste.empty) {
+    return;
+  }
 
- await addDoc(
-   collection(db,'interesses'),
-   {
-     petId,
-     donoId: petData?.donoId,
-     interessadoId,
-     data: Date.now(),
-     status:'novo'
-   }
- );
+  const pet = await getDoc(doc(db, 'pets', petId));
+  const petData = pet.data();
 
- const dono =
-  await getDoc(
-   doc(
-    db,
-    'usuarios',
-    petData?.donoId
-   )
- );
+  const interesseRef = await addDoc(collection(db, 'interesses'), {
+    petId,
+    donoId: petData?.donoId,
+    interessadoId,
+    data: Date.now(),
+    status: 'novo',
+  });
 
- const token =
-   dono.data()?.expoPushToken;
+  const dono = await getDoc(doc(db, 'usuarios', petData?.donoId));
+  const token = dono.data()?.expoPushToken;
 
- if (token) {
-
-   await enviarPush(
-     token,
-     'Novo interesse',
-     `Alguém demonstrou interesse em ${petData?.nome}`
-   );
-
- }
-
+  if (token) {
+    await enviarPush(
+      token,
+      'Novo interesse',
+      `Alguém demonstrou interesse em ${petData?.nome}`,
+      {
+        tipo: 'novo_interesse',
+        interesseId: interesseRef.id,
+        petId,
+        interessadoId,
+      }
+    );
+  }
 }

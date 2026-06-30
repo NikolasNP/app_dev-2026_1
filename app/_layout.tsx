@@ -1,10 +1,6 @@
-import { Stack } from 'expo-router';
-
-import {
-  useEffect
-} from 'react';
-
 import * as Notifications from 'expo-notifications';
+import { Stack, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,96 +11,71 @@ Notifications.setNotificationHandler({
 });
 
 export default function Layout() {
+  const router = useRouter();
 
   useEffect(() => {
+    const sub = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log('📩 Notificação recebida:', notification);
+      }
+    );
 
-    const sub =
-      Notifications
-        .addNotificationReceivedListener(
-          (notification) => {
+    const resposta = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('👆 Notificação clicada:', response);
 
-            console.log(
-              '📩 Notificação recebida:',
-              notification
-            );
+        const data = response.notification.request.content.data as any;
 
-          }
-        );
+        if (data?.tipo === 'novo_interesse') {
+          router.push({
+            pathname: '/conversas' as any,
+            params: {
+              aba: 'interessados',
+            },
+          });
+          return;
+        }
 
-    const resposta =
-      Notifications
-        .addNotificationResponseReceivedListener(
-          (response) => {
-
-            console.log(
-              '👆 Notificação clicada:',
-              response
-            );
-
-          }
-        );
+        if (
+          data?.tipo === 'doacao_confirmada' ||
+          data?.tipo === 'doacao_recusada'
+        ) {
+          router.push('/conversas' as any);
+          return;
+        }
+      }
+    );
 
     return () => {
-
       sub.remove();
-
       resposta.remove();
-
     };
-
   }, []);
 
   return (
-
     <Stack
       screenOptions={{
-        headerShown: false
+        headerShown: false,
       }}
     >
-
       {/* PRINCIPAIS */}
-      <Stack.Screen
-        name="index"
-      />
-
-      <Stack.Screen
-        name="cadastro"
-      />
-
-      <Stack.Screen
-        name="cadastrar_animal"
-      />
-
-      <Stack.Screen
-        name="adotar"
-      />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="cadastro" />
+      <Stack.Screen name="cadastrar_animal" />
+      <Stack.Screen name="adotar" />
 
       {/* DETALHE */}
-      <Stack.Screen
-        name="detalhe_animal"
-      />
+      <Stack.Screen name="detalhe_animal" />
 
       {/* MEUS PETS */}
-      <Stack.Screen
-        name="meus_pets"
-      />
-
-      <Stack.Screen
-        name="detalhe_meu_pet"
-      />
+      <Stack.Screen name="meus_pets" />
+      <Stack.Screen name="detalhe_meu_pet" />
 
       {/* INTERESSADOS */}
-      <Stack.Screen
-        name="interessados_pet"
-      />
+      <Stack.Screen name="interessados_pet" />
 
       {/* OUTRAS */}
-      <Stack.Screen
-        name="remover_pet_sucesso"
-      />
-
+      <Stack.Screen name="remover_pet_sucesso" />
     </Stack>
-
   );
-
 }
