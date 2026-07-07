@@ -79,8 +79,4 @@ git commit -m "Descrição das alterações"
 git push -u origin minha-branch
 ```
 
-## Integrantes
 
-- Nome do Integrante 1
-- Nome do Integrante 2
-- Nome do Integrante 3
