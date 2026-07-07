@@ -4,7 +4,7 @@
     "slug": "meau",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/Meau_Icone.png",
     "scheme": "meau",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,14 +13,22 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/Meau_Icone.png",
+        "backgroundColor": "#FFFFFF"
       },
+
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.time_b_k_n.meau"
+
+      "package": "com.time_b_k_n.meau",
+
+      "googleServicesFile": "./google-services.json",
+
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAAiNrj1myLr770eOjdS6Pkj7eW2oyH5r8"
+        }
+      }
     },
     "web": {
       "output": "static",
@@ -40,7 +48,8 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,

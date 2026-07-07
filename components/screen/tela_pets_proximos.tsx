@@ -4,15 +4,16 @@ import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+
 import { db } from '../firebaseConfig';
 import MenuLateral from '../navigation/menu_lateral';
 
@@ -20,6 +21,8 @@ type Animal = {
   id: string;
   nomeAnimal: string;
   fotoBase64?: string;
+  fotoBase64Mini?: string;
+  fotoBase64Original?: string;
   especie?: string;
   porte?: string;
   idade?: string;
@@ -31,6 +34,8 @@ type Animal = {
 };
 
 type FiltroDistancia = 'todos' | 5 | 10 | 15 | 20;
+
+const TAMANHO_MAXIMO_BASE64_MARKER = 180000;
 
 export default function TelaPetsProximos() {
   const router = useRouter();
@@ -48,26 +53,124 @@ export default function TelaPetsProximos() {
     carregarDados();
   }, []);
 
+  function coordenadaValida(latitude?: number, longitude?: number) {
+    return (
+      typeof latitude === 'number' &&
+      typeof longitude === 'number' &&
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180
+    );
+  }
+
+  function formatarImagemBase64(base64?: string) {
+    if (!base64) return null;
+
+    const imagem = base64.trim();
+
+    if (!imagem) return null;
+
+    if (imagem.length > TAMANHO_MAXIMO_BASE64_MARKER) {
+      console.log('Imagem ignorada no marcador: Base64 muito grande.');
+      return null;
+    }
+
+    if (imagem.startsWith('data:image')) {
+      return imagem;
+    }
+
+    return `data:image/jpeg;base64,${imagem}`;
+  }
+
+  function obterFotoMarker(animal: Animal) {
+
+    if (
+      animal.fotoBase64Mini &&
+      animal.fotoBase64Mini.length < TAMANHO_MAXIMO_BASE64_MARKER
+    ) {
+      return formatarImagemBase64(animal.fotoBase64Mini);
+    }
+
+    if (
+      animal.fotoBase64 &&
+      animal.fotoBase64.length < TAMANHO_MAXIMO_BASE64_MARKER
+    ) {
+      return formatarImagemBase64(animal.fotoBase64);
+    }
+
+    return null;
+  }
+
+  async function obterLocalizacaoAtual() {
+    const ultimaLocalizacao = await Location.getLastKnownPositionAsync({
+      maxAge: 15000,
+      requiredAccuracy: 3000,
+    });
+
+    if (
+      ultimaLocalizacao &&
+      coordenadaValida(
+        ultimaLocalizacao.coords.latitude,
+        ultimaLocalizacao.coords.longitude
+      )
+    ) {
+      console.log('Usando última localização conhecida.');
+      return ultimaLocalizacao;
+    }
+
+    console.log('Obtendo localização atual.');
+
+    return await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Lowest,
+    });
+  }
+
   async function carregarDados() {
     try {
+      setCarregando(true);
+
+      console.log('===== carregarDados iniciado =====');
+
       const { status } = await Location.requestForegroundPermissionsAsync();
+
+      console.log('Permissão de localização:', status);
 
       if (status !== 'granted') {
         Alert.alert(
           'Permissão negada',
           'Permita o acesso à localização para ver pets próximos.'
         );
+
+        setCarregando(false);
         return;
       }
 
-      const localizacao = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      const localizacao = await obterLocalizacaoAtual();
+
+      const latitudeAtual = Number(localizacao.coords.latitude);
+      const longitudeAtual = Number(localizacao.coords.longitude);
+
+      console.log('Localização:', latitudeAtual, longitudeAtual);
+
+      if (!coordenadaValida(latitudeAtual, longitudeAtual)) {
+        Alert.alert(
+          'Erro',
+          'A localização retornada pelo dispositivo é inválida.'
+        );
+
+        setCarregando(false);
+        return;
+      }
 
       setLocalizacaoUsuario({
-        latitude: localizacao.coords.latitude,
-        longitude: localizacao.coords.longitude,
+        latitude: latitudeAtual,
+        longitude: longitudeAtual,
       });
+
+      console.log('Consultando animais no Firestore.');
 
       const q = query(
         collection(db, 'animais'),
@@ -76,27 +179,54 @@ export default function TelaPetsProximos() {
 
       const snapshot = await getDocs(q);
 
+      console.log('Animais encontrados no Firestore:', snapshot.size);
+
       const lista = snapshot.docs
         .map((docSnap) => ({
           id: docSnap.id,
           ...(docSnap.data() as Omit<Animal, 'id'>),
         }))
-        .filter(
-          (animal) =>
+        .filter((animal) => {
+          const valido =
             animal.removido !== true &&
-            typeof animal.latitude === 'number' &&
-            typeof animal.longitude === 'number'
-        );
+            animal.disponivel === true &&
+            coordenadaValida(animal.latitude, animal.longitude);
+
+          if (!valido) {
+            console.log('Animal ignorado por dados inválidos:', {
+              id: animal.id,
+              nomeAnimal: animal.nomeAnimal,
+              latitude: animal.latitude,
+              longitude: animal.longitude,
+              disponivel: animal.disponivel,
+              removido: animal.removido,
+            });
+          }
+
+          return valido;
+        });
+
+      console.log('Animais válidos:', lista.length);
 
       setAnimais(lista);
+
+      console.log('===== carregarDados finalizado =====');
     } catch (error: any) {
+      console.log('ERRO AO CARREGAR MAPA');
+      console.log(error);
+      console.log(error?.message);
+
       Alert.alert(
         'Erro',
-        error.message || 'Não foi possível carregar o mapa.'
+        error?.message || 'Não foi possível carregar o mapa.'
       );
     } finally {
       setCarregando(false);
     }
+  }
+
+  function grausParaRad(valor: number) {
+    return valor * (Math.PI / 180);
   }
 
   function calcularDistanciaKm(
@@ -121,16 +251,16 @@ export default function TelaPetsProximos() {
     return R * c;
   }
 
-  function grausParaRad(valor: number) {
-    return valor * (Math.PI / 180);
-  }
-
   const animaisFiltrados = useMemo(() => {
     if (!localizacaoUsuario) return animais;
 
     if (filtro === 'todos') return animais;
 
     return animais.filter((animal) => {
+      if (!coordenadaValida(animal.latitude, animal.longitude)) {
+        return false;
+      }
+
       const distancia = calcularDistanciaKm(
         localizacaoUsuario.latitude,
         localizacaoUsuario.longitude,
@@ -146,7 +276,10 @@ export default function TelaPetsProximos() {
     return (
       <View style={styles.centralizador}>
         <ActivityIndicator size="large" color="#88c9bf" />
-        <Text style={styles.textoCarregando}>Carregando mapa...</Text>
+
+        <Text style={styles.textoCarregando}>
+          Carregando mapa...
+        </Text>
       </View>
     );
   }
@@ -159,10 +292,16 @@ export default function TelaPetsProximos() {
 
           <View style={styles.appBar}>
             <TouchableOpacity onPress={abrirMenu}>
-              <Ionicons name="menu" size={24} color="#434343" />
+              <Ionicons
+                name="menu"
+                size={24}
+                color="#434343"
+              />
             </TouchableOpacity>
 
-            <Text style={styles.titulo}>Pets próximos</Text>
+            <Text style={styles.titulo}>
+              Pets próximos
+            </Text>
 
             <View style={{ width: 24 }} />
           </View>
@@ -178,7 +317,7 @@ export default function TelaPetsProximos() {
                 onPress={() => setFiltro(item)}
               >
                 <Text style={styles.filtroTexto}>
-                  {item === 'todos' ? 'Todos' : `${item}km`}
+                  {item === 'todos' ? 'Todos' : `${item} km`}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -186,43 +325,77 @@ export default function TelaPetsProximos() {
 
           <MapView
             style={styles.mapa}
+            showsUserLocation
+            loadingEnabled
             initialRegion={{
               latitude: localizacaoUsuario.latitude,
               longitude: localizacaoUsuario.longitude,
               latitudeDelta: 0.08,
               longitudeDelta: 0.08,
             }}
-            showsUserLocation
+            onMapReady={() => console.log('Mapa carregado')}
+            onLayout={() => console.log('Layout do mapa pronto')}
           >
-            {animaisFiltrados.map((animal) => (
-            <Marker
-                key={animal.id}
-                coordinate={{
-                latitude: animal.latitude!,
-                longitude: animal.longitude!,
-                }}
-                title={animal.nomeAnimal}
-                description={animal.localizacaoTexto || 'Localização aproximada'}
-                onCalloutPress={() =>
-                router.push({
-                    pathname: '/detalhe_animal' as any,
-                    params: { animal: JSON.stringify(animal) },
-                })
-                }
-            >
-                <View style={styles.marker} collapsable = {false}>
-                {animal.fotoBase64 ? (
-                    <Image
-                    source={{ uri: animal.fotoBase64 }}
-                    style={styles.markerFoto}
-                    resizeMode="cover"
-                    />
-                ) : (
-                    <Ionicons name="paw" size={24} color="#434343" />
-                )}
-                </View>
-            </Marker>
-            ))}
+            {animaisFiltrados.map((animal) => {
+              if (!coordenadaValida(animal.latitude, animal.longitude)) {
+                console.log('Marcador ignorado por coordenada inválida:', animal);
+                return null;
+              }
+
+              const fotoMarker = obterFotoMarker(animal);
+              return (
+                <Marker
+                  key={animal.id}
+                  coordinate={{
+                      latitude: animal.latitude!,
+                      longitude: animal.longitude!,
+                  }}
+                  title={animal.nomeAnimal}
+                  description={
+                      animal.localizacaoTexto ??
+                      'Localização aproximada'
+                  }
+                  tracksViewChanges={true}
+                  onPress={() =>
+                      router.push({
+                          pathname: '/detalhe_animal' as any,
+                          params: {
+                              animal: JSON.stringify(animal),
+                          },
+                      })
+                  }
+              >
+              {
+              fotoMarker
+              ?
+
+              <Image
+                  source={{
+                      uri: fotoMarker,
+                  }}
+                  style={{
+                      width:48,
+                      height:48,
+                      borderRadius:24,
+                      borderWidth:2,
+                      borderColor:'#88c9bf',
+                      backgroundColor:'#FFFFFF',
+                  }}
+              />
+
+              :
+
+              <Ionicons
+                  name="paw"
+                  size={40}
+                  color="#E67E22"
+              />
+
+              }
+
+              </Marker>
+              );
+            })}
           </MapView>
 
           <View style={styles.rodape}>
@@ -289,24 +462,7 @@ const styles = StyleSheet.create({
   mapa: {
     flex: 1,
   },
-marker: {
-  width: 62,
-  height: 62,
-  borderRadius: 31,
-  backgroundColor: '#88c9bf',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 1,
-  borderColor: '#88c9bf',
-  overflow: 'hidden',
-},
 
-markerFoto: {
-  width: 60,
-  height: 60,
-  borderRadius: 30,
-},
-  
   rodape: {
     paddingVertical: 10,
     alignItems: 'center',
