@@ -3,18 +3,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
 import { auth, db } from '../firebaseConfig';
 
-const MapView = Platform.OS !== 'web' ? require('react-native-maps').default : null;
-const Marker = Platform.OS !== 'web' ? require('react-native-maps').Marker : null;
+const MapView =
+  Platform.OS !== 'web' ? require('react-native-maps').default : null;
+
+const Marker =
+  Platform.OS !== 'web' ? require('react-native-maps').Marker : null;
 
 export default function TelaEditarLocalizacaoPet() {
   const router = useRouter();
@@ -30,6 +34,43 @@ export default function TelaEditarLocalizacaoPet() {
     carregarLocalizacao();
   }, []);
 
+  function coordenadaValida(lat?: number | null, lng?: number | null) {
+    return (
+      typeof lat === 'number' &&
+      typeof lng === 'number' &&
+      Number.isFinite(lat) &&
+      Number.isFinite(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    );
+  }
+
+  async function obterLocalizacaoAtual() {
+    const ultimaLocalizacao = await Location.getLastKnownPositionAsync({
+      maxAge: 15000,
+      requiredAccuracy: 3000,
+    });
+
+    if (
+      ultimaLocalizacao &&
+      coordenadaValida(
+        ultimaLocalizacao.coords.latitude,
+        ultimaLocalizacao.coords.longitude
+      )
+    ) {
+      console.log('Usando última localização conhecida na edição.');
+      return ultimaLocalizacao;
+    }
+
+    console.log('Obtendo localização atual na edição.');
+
+    return await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Lowest,
+    });
+  }
+
   async function carregarLocalizacao() {
     const usuario = auth.currentUser;
 
@@ -39,6 +80,10 @@ export default function TelaEditarLocalizacaoPet() {
     }
 
     try {
+      setCarregando(true);
+
+      console.log('===== carregarLocalizacao iniciado =====');
+
       const animalRef = doc(db, 'animais', String(id));
       const animalSnap = await getDoc(animalRef);
 
@@ -56,28 +101,54 @@ export default function TelaEditarLocalizacaoPet() {
         return;
       }
 
-      if (typeof animal.latitude === 'number' && typeof animal.longitude === 'number') {
+      if (coordenadaValida(animal.latitude, animal.longitude)) {
+        console.log('Usando localização salva do animal.');
+
         setLatitude(animal.latitude);
         setLongitude(animal.longitude);
-        setLocalizacaoTexto(animal.localizacaoTexto || 'Localização aproximada');
-      } else {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        setLocalizacaoTexto(
+          animal.localizacaoTexto || 'Localização aproximada'
+        );
 
-        if (status !== 'granted') {
-          Alert.alert('Permissão negada', 'Permita o acesso à localização.');
-          router.back();
-          return;
-        }
-
-        const localizacao = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-
-        setLatitude(Number(localizacao.coords.latitude.toFixed(3)));
-        setLongitude(Number(localizacao.coords.longitude.toFixed(3)));
-        setLocalizacaoTexto('Localização aproximada');
+        return;
       }
+
+      console.log('Animal sem localização válida. Solicitando localização.');
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      console.log('Permissão de localização:', status);
+
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'Permita o acesso à localização.');
+        router.back();
+        return;
+      }
+
+      const localizacao = await obterLocalizacaoAtual();
+
+      const novaLatitude = Number(localizacao.coords.latitude.toFixed(3));
+      const novaLongitude = Number(localizacao.coords.longitude.toFixed(3));
+
+      if (!coordenadaValida(novaLatitude, novaLongitude)) {
+        Alert.alert(
+          'Erro',
+          'A localização retornada pelo dispositivo é inválida.'
+        );
+        router.back();
+        return;
+      }
+
+      console.log('Localização obtida:', novaLatitude, novaLongitude);
+
+      setLatitude(novaLatitude);
+      setLongitude(novaLongitude);
+      setLocalizacaoTexto('Localização aproximada');
     } catch (error: any) {
+      console.log('ERRO AO CARREGAR LOCALIZAÇÃO');
+      console.log(error);
+      console.log(error?.message);
+
       Alert.alert('Erro', error.message || 'Erro ao carregar localização.');
     } finally {
       setCarregando(false);
@@ -85,6 +156,11 @@ export default function TelaEditarLocalizacaoPet() {
   }
 
   async function atualizarTextoLocalizacao(lat: number, lng: number) {
+    if (!coordenadaValida(lat, lng)) {
+      setLocalizacaoTexto('Localização aproximada');
+      return;
+    }
+
     try {
       const resultado = await Location.reverseGeocodeAsync({
         latitude: lat,
@@ -106,13 +182,19 @@ export default function TelaEditarLocalizacaoPet() {
           estado ? `${bairro} - ${estado}` : bairro
         );
       }
-    } catch {
+    } catch (error) {
+      console.log('Erro no reverse geocode:', error);
       setLocalizacaoTexto('Localização aproximada');
     }
   }
 
   async function salvarLocalizacao() {
     if (!id || latitude === null || longitude === null) return;
+
+    if (!coordenadaValida(latitude, longitude)) {
+      Alert.alert('Erro', 'Coordenadas inválidas.');
+      return;
+    }
 
     try {
       setSalvando(true);
@@ -130,6 +212,10 @@ export default function TelaEditarLocalizacaoPet() {
       Alert.alert('Sucesso', 'Localização do pet atualizada.');
       router.back();
     } catch (error: any) {
+      console.log('ERRO AO SALVAR LOCALIZAÇÃO');
+      console.log(error);
+      console.log(error?.message);
+
       Alert.alert('Erro', error.message || 'Erro ao salvar localização.');
     } finally {
       setSalvando(false);
@@ -143,7 +229,7 @@ export default function TelaEditarLocalizacaoPet() {
           O mapa funciona no aplicativo Android/iOS.
         </Text>
         <Text style={styles.textoInfo}>
-          Teste pelo Expo Go ou APK.
+          Teste pelo Development Build ou APK.
         </Text>
       </View>
     );
@@ -172,29 +258,54 @@ export default function TelaEditarLocalizacaoPet() {
 
       <View style={styles.infoBox}>
         <Text style={styles.infoTitulo}>Arraste o marcador</Text>
+
         <Text style={styles.infoTexto}>
           A localização é aproximada para proteger o endereço do usuário.
         </Text>
-        <Text style={styles.localizacao}>{localizacaoTexto}</Text>
+
+        <Text style={styles.localizacao}>
+          {localizacaoTexto}
+        </Text>
       </View>
 
       <MapView
         style={styles.mapa}
+        loadingEnabled
         initialRegion={{
           latitude,
           longitude,
           latitudeDelta: 0.03,
           longitudeDelta: 0.03,
         }}
+        onMapReady={() => console.log('Mapa de edição carregado')}
+        onLayout={() => console.log('Layout do mapa de edição pronto')}
       >
         <Marker
           draggable
-          coordinate={{ latitude, longitude }}
+          tracksViewChanges={false}
+          anchor={{
+            x: 0.5,
+            y: 0.5,
+          }}
+          coordinate={{
+            latitude,
+            longitude,
+          }}
           title="Localização aproximada do pet"
           description={localizacaoTexto}
           onDragEnd={async (event: any) => {
-            const novaLatitude = Number(event.nativeEvent.coordinate.latitude.toFixed(3));
-            const novaLongitude = Number(event.nativeEvent.coordinate.longitude.toFixed(3));
+            const novaLatitude = Number(
+              event.nativeEvent.coordinate.latitude.toFixed(3)
+            );
+
+            const novaLongitude = Number(
+              event.nativeEvent.coordinate.longitude.toFixed(3)
+            );
+
+            if (!coordenadaValida(novaLatitude, novaLongitude)) {
+              Alert.alert('Erro', 'Coordenadas inválidas.');
+              return;
+            }
 
             setLatitude(novaLatitude);
             setLongitude(novaLongitude);
@@ -204,7 +315,11 @@ export default function TelaEditarLocalizacaoPet() {
         />
       </MapView>
 
-      <TouchableOpacity style={styles.botaoSalvar} onPress={salvarLocalizacao}>
+      <TouchableOpacity
+        style={styles.botaoSalvar}
+        onPress={salvarLocalizacao}
+        disabled={salvando}
+      >
         <Text style={styles.textoBotao}>
           {salvando ? 'SALVANDO...' : 'SALVAR LOCALIZAÇÃO'}
         </Text>
